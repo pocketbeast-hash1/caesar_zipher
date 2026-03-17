@@ -12,6 +12,7 @@ class ToastContext extends StatefulWidget {
   State<ToastContext> createState() => _ToastContextState();
 
   static void success(String text) {
+    _fToast.removeCustomToast();
     _fToast.showToast(
       child: _ToastContainer(
         backgroundColor: Colors.greenAccent,
@@ -22,6 +23,7 @@ class ToastContext extends StatefulWidget {
   }
 
   static void error(String text) {
+    _fToast.removeCustomToast();
     _fToast.showToast(
       child: _ToastContainer(
         backgroundColor: const Color.fromARGB(255, 251, 134, 134),
@@ -37,6 +39,8 @@ class ToastContext extends StatefulWidget {
     String? success,
     String? error,
   }) {
+    _fToast.removeCustomToast();
+
     _fToast.showToast(
       child: _ToastContainer(
         backgroundColor: const Color.fromARGB(255, 180, 228, 253),
