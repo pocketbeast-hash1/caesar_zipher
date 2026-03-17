@@ -1,6 +1,6 @@
-import 'dart:async';
-import 'package:ctelnet/ctelnet.dart';
-import 'app_logger.dart';
+import "dart:async";
+import "package:ctelnet/ctelnet.dart";
+import "package:caesar_zipher/app_logger.dart";
 
 class TelnetConfig {
   String printerHost;

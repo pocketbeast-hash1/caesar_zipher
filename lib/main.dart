@@ -1,8 +1,8 @@
-import 'package:caesar_zipher/app_logger.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import "package:caesar_zipher/app_logger.dart";
+import "package:flutter/material.dart";
+import "package:fluttertoast/fluttertoast.dart";
 import "telnet_client.dart";
-import "./widgets/toast_context.dart";
+import "package:caesar_zipher/widgets/toast_context.dart";
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
