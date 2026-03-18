@@ -1,4 +1,5 @@
 import "package:caesar_zipher/app_logger.dart";
+import "package:caesar_zipher/widgets/bool_button.dart";
 import "package:flutter/material.dart";
 import "package:fluttertoast/fluttertoast.dart";
 import "telnet_client.dart";
@@ -31,7 +32,12 @@ class MainApp extends StatelessWidget {
                   Future<void> promise = TelnetClient.connect(
                     TelnetConfig("192.168.2.153", 20000, "DataDM"),
                   );
-                  ToastContext.promise(promise, "pending", success: "success", error: "error");
+                  ToastContext.promise(
+                    promise,
+                    "pending",
+                    success: "success",
+                    error: "error",
+                  );
                 },
                 child: Text("CONNECT TO PRINTER"),
               ),
@@ -50,9 +56,18 @@ class MainApp extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  ToastContext.error("very very very very very very very very very very very very very very very very long text");
+                  ToastContext.error(
+                    "very very very very very very very very very very very very very very very very long text",
+                  );
                 },
                 child: Text("show toast"),
+              ),
+              BoolButton(
+                btnState: false,
+                text: "test",
+                onPress: () {
+                  //
+                },
               ),
             ],
           ),

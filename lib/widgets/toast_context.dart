@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:fluttertoast/fluttertoast.dart";
 import "package:caesar_zipher/main.dart";
+import "package:caesar_zipher/styles/colors.dart";
 
 late FToast _fToast;
 
@@ -15,7 +16,7 @@ class ToastContext extends StatefulWidget {
     _fToast.removeCustomToast();
     _fToast.showToast(
       child: _ToastContainer(
-        backgroundColor: Colors.greenAccent,
+        backgroundColor: GlobalColors.goodBackground,
         icon: Icon(Icons.check),
         text: text,
       ),
@@ -26,7 +27,7 @@ class ToastContext extends StatefulWidget {
     _fToast.removeCustomToast();
     _fToast.showToast(
       child: _ToastContainer(
-        backgroundColor: const Color.fromARGB(255, 251, 134, 134),
+        backgroundColor: GlobalColors.badBackground,
         icon: Icon(Icons.error_outline),
         text: text,
       ),
@@ -43,7 +44,7 @@ class ToastContext extends StatefulWidget {
 
     _fToast.showToast(
       child: _ToastContainer(
-        backgroundColor: const Color.fromARGB(255, 180, 228, 253),
+        backgroundColor: GlobalColors.normalBackground,
         icon: Icon(Icons.pending_outlined),
         text: pending,
       ),
