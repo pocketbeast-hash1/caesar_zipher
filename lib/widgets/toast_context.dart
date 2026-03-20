@@ -36,7 +36,7 @@ class ToastContext extends StatefulWidget {
 
   static void promise(
     Future promise,
-    String pending, {
+    { String? pending,
     String? success,
     String? error,
   }) {
@@ -46,7 +46,7 @@ class ToastContext extends StatefulWidget {
       child: _ToastContainer(
         backgroundColor: GlobalColors.normalBackground,
         icon: Icon(Icons.pending_outlined),
-        text: pending,
+        text: pending ?? "Загрузка...",
       ),
       toastDuration: Duration(seconds: 60),
     );

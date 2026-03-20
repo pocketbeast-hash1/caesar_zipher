@@ -27,7 +27,7 @@ class BoolButton extends StatelessWidget {
         shadowColor: Colors.transparent,
         alignment: Alignment.center,
       ),
-      child: Text("data", style: TextStyle(color: GlobalColors.textColor)),
+      child: Text(text, style: TextStyle(color: GlobalColors.textColor)),
     );
   }
 }
