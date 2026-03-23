@@ -22,13 +22,13 @@ class RemainCodes extends StatelessWidget {
     return Consumer<GlobalStateModel>(
       builder: (context, state, child) {
         return Box(
-          direction: BoxDirection.vertical,
+          stretch: true,
           children: [
             Text(
               state.codes.length.toString(),
               style: TextStyle(
                 color: _getTextColor(state.codes.length),
-                fontSize: 60,
+                fontSize: 90,
                 fontWeight: FontWeight(700),
               ),
             ),

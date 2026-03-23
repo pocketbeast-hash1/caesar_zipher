@@ -2,9 +2,16 @@ import 'package:caesar_zipher/styles/colors.dart';
 import 'package:flutter/material.dart';
 
 class Box extends StatelessWidget {
-  const Box({super.key, required this.direction, required this.children});
-  final BoxDirection direction;
-  final List<Widget> children;
+  const Box({
+    super.key,
+    this.direction,
+    this.stretch,
+    this.children,
+  });
+
+  final Axis? direction;
+  final bool? stretch;
+  final List<Widget>? children;
 
   @override
   Widget build(BuildContext context) {
@@ -14,34 +21,22 @@ class Box extends StatelessWidget {
         borderRadius: BorderRadius.circular(5),
         color: GlobalColors.boxBackground,
       ),
-      child: _Line(direction: direction, children: children),
+      child: Flex(
+        direction: direction == Axis.vertical ? Axis.horizontal : Axis.vertical,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: (stretch ?? false) ? MainAxisSize.max : MainAxisSize.min,
+        children: [
+          Flex(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: (stretch ?? false) ? MainAxisSize.max : MainAxisSize.min,
+            spacing: 10,
+            direction: direction ?? Axis.horizontal,
+            children: children ?? [],
+          ),
+        ],
+      ),
     );
-  }
-}
-
-enum BoxDirection { vertical, horizontal }
-
-class _Line extends StatelessWidget {
-  const _Line({required this.direction, required this.children});
-  final BoxDirection direction;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    Map<Symbol, dynamic> lineContent = {
-      Symbol("crossAxisAlignment"): CrossAxisAlignment.center,
-      Symbol("mainAxisAlignment"): MainAxisAlignment.center,
-      Symbol("mainAxisSize"): MainAxisSize.min,
-      Symbol("spacing"): 10.0,
-      Symbol("children"): children,
-    };
-
-    if (direction == BoxDirection.horizontal) {
-      return Function.apply(Row.new, [], lineContent);
-    } else if (direction == BoxDirection.vertical) {
-      return Function.apply(Column.new, [], lineContent);
-    } else {
-      return Function.apply(Column.new, [], lineContent);
-    }
   }
 }

@@ -1,6 +1,5 @@
 import "package:caesar_zipher/models/global_state_model.dart";
-import "package:caesar_zipher/widgets/load_codes_button.dart";
-import "package:caesar_zipher/widgets/remain_codes.dart";
+import "package:caesar_zipher/widgets/wrapper.dart";
 import "package:flutter/material.dart";
 import "package:fluttertoast/fluttertoast.dart";
 import "package:caesar_zipher/widgets/toast_context.dart";
@@ -29,13 +28,9 @@ class MainApp extends StatelessWidget {
         child: Center(
           child: ChangeNotifierProvider(
             create: (context) => GlobalStateModel(),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 10,
-              children: [
-                LoadCodesButton(),
-                RemainCodes(),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(width: 1200, height: 800, child: Wrapper()),
             ),
           ),
         ),
