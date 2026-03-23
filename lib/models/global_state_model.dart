@@ -6,7 +6,7 @@ class GlobalStateModel extends ChangeNotifier {
   bool _printerConnected = false;
   List<String> _codes = [];
 
-  List<String> _logs = [];
+  final List<String> _logs = [];
   final int _logsMaxLength = 100;
 
   bool get working => _working;
