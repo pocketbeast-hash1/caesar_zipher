@@ -6,6 +6,7 @@ import "package:caesar_zipher/widgets/toast_context.dart";
 import "package:provider/provider.dart";
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+GlobalStateModel globalState = GlobalStateModel();
 
 void main() {
   runApp(
@@ -27,7 +28,7 @@ class MainApp extends StatelessWidget {
       body: ToastContext(
         child: Center(
           child: ChangeNotifierProvider(
-            create: (context) => GlobalStateModel(),
+            create: (context) => globalState,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(width: 1200, height: 800, child: Wrapper()),

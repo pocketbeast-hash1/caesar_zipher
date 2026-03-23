@@ -23,7 +23,7 @@ class RemainCodes extends StatelessWidget {
       builder: (context, state, child) {
         return Box(
           stretch: true,
-          children: [
+          child:
             Text(
               state.codes.length.toString(),
               style: TextStyle(
@@ -32,7 +32,6 @@ class RemainCodes extends StatelessWidget {
                 fontWeight: FontWeight(700),
               ),
             ),
-          ],
         );
       },
     );

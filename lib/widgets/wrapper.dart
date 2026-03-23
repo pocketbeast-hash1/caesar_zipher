@@ -1,5 +1,5 @@
-import 'package:caesar_zipher/widgets/box.dart';
 import 'package:caesar_zipher/widgets/control_buttons.dart';
+import 'package:caesar_zipher/widgets/logs.dart';
 import 'package:caesar_zipher/widgets/remain_codes.dart';
 import 'package:flutter/material.dart';
 
@@ -27,15 +27,7 @@ class Wrapper extends StatelessWidget {
             ),
           ),
           Flexible(
-            child: Box(
-              stretch: true,
-              children: [
-                Text(
-                  "тут будут логи",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight(700)),
-                ),
-              ],
-            ),
+            child: Logs(),
           ),
         ],
       ),

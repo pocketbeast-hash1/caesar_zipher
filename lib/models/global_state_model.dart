@@ -6,6 +6,9 @@ class GlobalStateModel extends ChangeNotifier {
   bool _printerConnected = false;
   List<String> _codes = [];
 
+  List<String> _logs = [];
+  final int _logsMaxLength = 100;
+
   bool get working => _working;
   void setWorking(bool val) {
     _working = val;
@@ -21,6 +24,16 @@ class GlobalStateModel extends ChangeNotifier {
   List<String> get codes => _codes;
   void setCodes(List<String> newCodes) {
     _codes = newCodes;
+    notifyListeners();
+  }
+
+  List<String> get logs => _logs;
+  void addLogs(List<String> newLogs) {
+    while (_logs.length + newLogs.length > _logsMaxLength) {
+      _logs.removeAt(0);
+    }
+
+    _logs.addAll(newLogs);
     notifyListeners();
   }
 
