@@ -1,3 +1,4 @@
+import 'package:caesar_zipher/utils/queue.dart';
 import 'package:flutter/material.dart';
 
 class GlobalStateModel extends ChangeNotifier {
@@ -21,5 +22,14 @@ class GlobalStateModel extends ChangeNotifier {
   void setCodes(List<String> newCodes) {
     _codes = newCodes;
     notifyListeners();
+  }
+
+  Future<void> _asyncInit() async {
+    _codes = await Queue.getQueue();
+    notifyListeners();
+  }
+
+  GlobalStateModel() {
+    _asyncInit();
   }
 }

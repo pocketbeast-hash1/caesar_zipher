@@ -7,4 +7,7 @@ abstract class GlobalColors {
   static Color boxBackground = const Color.fromARGB(255, 229, 229, 229);
 
   static Color textColor = Colors.black;
+  static Color goodTextColor = const Color.fromARGB(255, 26, 134, 81);
+  static Color normalTextColor = const Color.fromARGB(255, 198, 198, 52);
+  static Color badTextColor = const Color.fromARGB(255, 167, 54, 54);
 }
