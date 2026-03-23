@@ -1,6 +1,7 @@
 import 'package:caesar_zipher/widgets/change_working_button.dart';
 import 'package:caesar_zipher/widgets/connect_to_printer_button.dart';
 import 'package:caesar_zipher/widgets/load_codes_button.dart';
+import 'package:caesar_zipher/widgets/settings_button.dart';
 import 'package:flutter/material.dart';
 
 class ControlButtons extends StatelessWidget {
@@ -15,6 +16,7 @@ class ControlButtons extends StatelessWidget {
         Expanded(child: ChangeWorkingButton()),
         Expanded(child: ConnectToPrinterButton()),
         Expanded(child: LoadCodesButton()),
+        SettingsButton(),
       ],
     );
   }
