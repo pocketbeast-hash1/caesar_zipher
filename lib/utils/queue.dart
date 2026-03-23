@@ -1,11 +1,9 @@
 import 'dart:io';
-import 'package:caesar_zipher/app_logger.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract class Queue {
   static Future<String> get _localPath async {
     final directory = await getApplicationCacheDirectory();
-    AppLogger.logger.d("local path: ${directory.path}");
     return directory.path;
   }
 

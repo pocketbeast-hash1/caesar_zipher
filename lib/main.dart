@@ -1,5 +1,5 @@
 import "package:caesar_zipher/models/global_state_model.dart";
-import "package:caesar_zipher/widgets/load_codes_button.dart";
+import "package:caesar_zipher/widgets/change_working_button.dart";
 import "package:flutter/material.dart";
 import "package:fluttertoast/fluttertoast.dart";
 import "package:caesar_zipher/widgets/toast_context.dart";
@@ -28,7 +28,7 @@ class MainApp extends StatelessWidget {
         child: Center(
           child: ChangeNotifierProvider(
             create: (context) => GlobalStateModel(),
-            child: LoadCodesButton(),
+            child: ChangeWorkingButton(),
           ),
         ),
       ),
