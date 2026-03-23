@@ -1,4 +1,4 @@
-package com.example.caesar_zipher
+package com.pocketbeast.caesar_zipher
 
 import io.flutter.embedding.android.FlutterActivity
 
