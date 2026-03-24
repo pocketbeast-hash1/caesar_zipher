@@ -16,11 +16,14 @@ abstract class TelnetClient {
   static final String responseOK = "ACK";
 
   static CTelnetClient? _client;
+  static String _barcodeFieldName = "";
   static Stream<Message>? _stream;
   static StreamSubscription<Message>? _sub;
   static Function? _onDataTrigger;
   static String _lastResponse = "";
   static DateTime _lastResponseDate = DateTime.now();
+
+  static String get barcodeFieldName => _barcodeFieldName;
 
   static Future<void> connect(
     TelnetConfig config, {
@@ -41,6 +44,8 @@ abstract class TelnetClient {
         AppLogger.logger.e("error: $error");
       },
     );
+
+    _barcodeFieldName = config.barcodeFieldName;
 
     _stream = await _client!.connect();
     _sub = _stream!.listen(_onData);
