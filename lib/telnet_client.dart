@@ -2,7 +2,7 @@ import "dart:async";
 import "package:ctelnet/ctelnet.dart";
 import "package:caesar_zipher/app_logger.dart";
 
-typedef OnDataTriggerCallback = void Function(String data);
+typedef OnDataTriggerCallback = void Function(Message data);
 
 class TelnetConfig {
   String printerHost;
