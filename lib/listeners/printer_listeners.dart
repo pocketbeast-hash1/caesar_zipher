@@ -9,19 +9,18 @@ abstract class PrinterListeners {
       if (data != TelnetResponse.printComplete || !globalState.working) return;
 
       List<String> codes = globalState.codes;
-      
+
       codes.removeAt(codes.length - 1);
-      String code = codes.last;
-
-      Map<String, String> newFields = {TelnetClient.barcodeFieldName: code};
-      await TelnetClient.updateJob(newFields);
-
-      await QueueFacade.loadQueue(codes, globalState);
 
       if (codes.isEmpty) {
         globalState.setWorking(false);
+      } else {
+        String code = codes.last;
+        Map<String, String> newFields = {TelnetClient.barcodeFieldName: code};
+        await TelnetClient.updateJob(newFields);
       }
 
+      await QueueFacade.loadQueue(codes, globalState);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при обработке данных с устройства: $e, $s");
     }
