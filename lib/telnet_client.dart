@@ -88,6 +88,15 @@ abstract class TelnetClient {
     return response;
   }
 
+  static Future<void> enablePrintNotification() async {
+    String response = await sendCommand("SNO|PRC|1|");
+    if (response != TelnetClient.responseOK) {
+      throw Exception(
+        "Не удалось включить уведомления о печати (некорректный ответ). Ожидается: ${TelnetClient.responseOK}. Получен: $response",
+      );
+    }
+  }
+
   static Future<void> updateJob(Map<String, String> fields) async {
     List<String> commandParts = ["JDA"];
 

@@ -56,23 +56,26 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
 
     Function.apply(ToastContext.promise, [promise], params);
 
-    promise
-        .then(
-          (value) {
-            state.setPrinterConnected(val);
-            if (val == false) {
-              state.setWorking(false);
-            }
-          },
-          onError: (err, s) {
-            AppLogger.logger.e("Ошибка работы с принтером: $err, $s");
-          },
-        )
-        .whenComplete(() {
-          setState(() {
-            waitingResponse = false;
-          });
+    try {
+      await promise;
+      state.setPrinterConnected(val);
+
+      if (val) {
+        TelnetClient.enablePrintNotification().catchError((e, s) {
+          AppLogger.logger.w(
+            "Не удалось включить уведомления о печати по причине: $e, $s",
+          );
         });
+      } else {
+        state.setWorking(false);
+      }
+    } catch (e, s) {
+      AppLogger.logger.e("Ошибка работы с принтером: $e, $s");
+    } finally {
+      setState(() {
+        waitingResponse = false;
+      });
+    }
   }
 
   @override
@@ -81,9 +84,7 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
       builder: (context, state, child) {
         return BoolButton(
           btnState: state.printerConnected,
-          text: state.printerConnected
-              ? "ПРИНТЕР ПОДКЛЮЧЕН"
-              : "ПРИНТЕР НЕ ПОДКЛЮЧЕН",
+          text: state.printerConnected ? "ПОДКЛЮЧЕН" : "НЕ ПОДКЛЮЧЕН",
           onPress: () => _changeConnection(state, !state.printerConnected),
         );
       },
