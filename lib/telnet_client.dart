@@ -82,6 +82,9 @@ abstract class TelnetClient {
       "Отправлена команда: $command\nОтвет получен: $gotResponse\nОтвет: $response",
     );
 
+    response = response.replaceAll("\r", "");
+    response = response.replaceAll("\n", "");
+
     return response;
   }
 
