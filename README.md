@@ -1,3 +1,3 @@
-# caesar_zipher
+# Caesar Zipher
 
-A new Flutter project.
+Программа для работы с принтером VideoJet по протоколу Zipher.
