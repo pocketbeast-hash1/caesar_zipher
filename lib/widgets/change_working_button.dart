@@ -21,7 +21,7 @@ class ChangeWorkingButton extends StatelessWidget {
       await TelnetClient.updateJob(newFields);
       
     } catch (e, s) {
-      AppLogger.logger.e("Ошибка при обновлении задания: $e, $s");
+      AppLogger.logger.w("Ошибка при обновлении задания: $e, $s");
     }
   }
 
