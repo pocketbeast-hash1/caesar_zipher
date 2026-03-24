@@ -33,6 +33,13 @@ class ChangeWorkingButton extends StatelessWidget {
       return;
     }
 
+    if (val && state.codes.isEmpty) {
+      ToastContext.error(
+        "Невозможно установить рабочий режим без загруженных штрихкодов!",
+      );
+      return;
+    }
+
     if (val) {
       await _updateJob();
     }
