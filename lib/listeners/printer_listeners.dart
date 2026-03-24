@@ -2,12 +2,11 @@ import 'package:caesar_zipher/app_logger.dart';
 import 'package:caesar_zipher/facades/queue_facade.dart';
 import 'package:caesar_zipher/main.dart';
 import 'package:caesar_zipher/telnet_client.dart';
-import 'package:ctelnet/ctelnet.dart';
 
 abstract class PrinterListeners {
-  static Future<void> onData(Message data) async {
+  static Future<void> onData(String data) async {
     try {
-      if (data.text != "PRC" || !globalState.working) return;
+      if (data != TelnetResponse.printComplete || !globalState.working) return;
 
       List<String> codes = globalState.codes;
       

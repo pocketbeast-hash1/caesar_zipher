@@ -2,7 +2,7 @@ import "dart:async";
 import "package:ctelnet/ctelnet.dart";
 import "package:caesar_zipher/app_logger.dart";
 
-typedef OnDataTriggerCallback = void Function(Message data);
+typedef OnDataTriggerCallback = void Function(String data);
 
 class TelnetConfig {
   String printerHost;
@@ -13,8 +13,6 @@ class TelnetConfig {
 }
 
 abstract class TelnetClient {
-  static final String responseOK = "ACK";
-
   static CTelnetClient? _client;
   static String _barcodeFieldName = "";
   static Stream<Message>? _stream;
@@ -63,11 +61,15 @@ abstract class TelnetClient {
   }
 
   static void _onData(Message msg) {
-    _lastResponse = msg.text;
+    String msgData = msg.text;
+    msgData = msgData.replaceAll("\r", "");
+    msgData = msgData.replaceAll("\n", "");
+    
+    _lastResponse = msgData;
     _lastResponseDate = DateTime.now();
     AppLogger.logger.d("data: $_lastResponse");
 
-    _onDataTrigger?.call(msg);
+    _onDataTrigger?.call(msgData);
   }
 
   static Future<String> sendCommand(String command, {int timeout = 5}) async {
@@ -87,17 +89,14 @@ abstract class TelnetClient {
       "Отправлена команда: $command\nОтвет получен: $gotResponse\nОтвет: $response",
     );
 
-    response = response.replaceAll("\r", "");
-    response = response.replaceAll("\n", "");
-
     return response;
   }
 
   static Future<void> enablePrintNotification() async {
     String response = await sendCommand("SNO|PRC|1|");
-    if (response != TelnetClient.responseOK) {
+    if (response != TelnetResponse.ok) {
       throw Exception(
-        "Не удалось включить уведомления о печати (некорректный ответ). Ожидается: ${TelnetClient.responseOK}. Получен: $response",
+        "Не удалось включить уведомления о печати (некорректный ответ). Ожидается: ${TelnetResponse.ok}. Получен: $response",
       );
     }
   }
@@ -112,10 +111,15 @@ abstract class TelnetClient {
     String command = "${commandParts.join("|")}|";
     String response = await sendCommand(command);
 
-    if (response != TelnetClient.responseOK) {
+    if (response != TelnetResponse.ok) {
       throw Exception(
-        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${TelnetClient.responseOK}. Получен: $response",
+        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${TelnetResponse.ok}. Получен: $response",
       );
     }
   }
+}
+
+abstract class TelnetResponse {
+  static final ok = "ACK";
+  static final printComplete = "PRC";
 }
