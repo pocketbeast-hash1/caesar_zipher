@@ -1,4 +1,5 @@
 import 'package:caesar_zipher/app_logger.dart';
+import 'package:caesar_zipher/listeners/printer_listeners.dart';
 import 'package:caesar_zipher/models/global_state_model.dart';
 import 'package:caesar_zipher/telnet_client.dart';
 import 'package:caesar_zipher/utils/settings.dart';
@@ -41,6 +42,7 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
           settings.printerPort,
           settings.barcodeFieldName,
         ),
+        onDataTrigger: PrinterListeners.onData,
       );
       params[Symbol("pending")] = "Подключение к принтеру...";
       params[Symbol("success")] = "Принтер подключен!";

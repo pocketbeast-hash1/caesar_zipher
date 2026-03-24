@@ -2,6 +2,8 @@ import "dart:async";
 import "package:ctelnet/ctelnet.dart";
 import "package:caesar_zipher/app_logger.dart";
 
+typedef OnDataTriggerCallback = void Function(String data);
+
 class TelnetConfig {
   String printerHost;
   int printerPort;
@@ -11,13 +13,19 @@ class TelnetConfig {
 }
 
 abstract class TelnetClient {
+  static final String responseOK = "ACK";
+
   static CTelnetClient? _client;
   static Stream<Message>? _stream;
   static StreamSubscription<Message>? _sub;
+  static Function? _onDataTrigger;
   static String _lastResponse = "";
   static DateTime _lastResponseDate = DateTime.now();
 
-  static Future<void> connect(TelnetConfig config) async {
+  static Future<void> connect(
+    TelnetConfig config, {
+    OnDataTriggerCallback? onDataTrigger,
+  }) async {
     if (_client != null && _client!.connected) return;
 
     _client = CTelnetClient(
@@ -36,6 +44,8 @@ abstract class TelnetClient {
 
     _stream = await _client!.connect();
     _sub = _stream!.listen(_onData);
+
+    _onDataTrigger = onDataTrigger;
   }
 
   static Future<void> disconnect() async {
@@ -51,6 +61,8 @@ abstract class TelnetClient {
     _lastResponse = msg.text;
     _lastResponseDate = DateTime.now();
     AppLogger.logger.d("data: $_lastResponse");
+
+    _onDataTrigger?.call(msg);
   }
 
   static Future<String> sendCommand(String command, {int timeout = 5}) async {
@@ -64,6 +76,29 @@ abstract class TelnetClient {
       await Future.delayed(Duration(milliseconds: 50));
     }
 
-    return _lastResponseDate.isAfter(prevResponse) ? _lastResponse : "";
+    bool gotResponse = _lastResponseDate.isAfter(prevResponse);
+    String response = gotResponse ? _lastResponse : "";
+    AppLogger.logger.i(
+      "Отправлена команда: $command\nОтвет получен: $gotResponse\nОтвет: $response",
+    );
+
+    return response;
+  }
+
+  static Future<void> updateJob(Map<String, String> fields) async {
+    List<String> commandParts = ["JDA"];
+
+    for (var pair in fields.entries) {
+      commandParts.add("${pair.key}=${pair.value}");
+    }
+
+    String command = "${commandParts.join("|")}|";
+    String response = await sendCommand(command);
+
+    if (response != TelnetClient.responseOK) {
+      throw Exception(
+        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${TelnetClient.responseOK}. Получен: $response",
+      );
+    }
   }
 }
