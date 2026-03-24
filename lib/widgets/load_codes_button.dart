@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:caesar_zipher/facades/queue_facade.dart';
 import 'package:caesar_zipher/models/global_state_model.dart';
 import 'package:caesar_zipher/styles/colors.dart';
-import 'package:caesar_zipher/utils/queue.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,8 +24,7 @@ class LoadCodesButton extends StatelessWidget {
     String content = await file.readAsString();
     List<String> codes = content.split("\n");
 
-    await Queue.loadQueue(codes);
-    state.setCodes(codes);
+    await QueueFacade.loadQueue(codes, state);
   }
 
   @override

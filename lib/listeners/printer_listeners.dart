@@ -1,7 +1,7 @@
 import 'package:caesar_zipher/app_logger.dart';
+import 'package:caesar_zipher/facades/queue_facade.dart';
 import 'package:caesar_zipher/main.dart';
 import 'package:caesar_zipher/telnet_client.dart';
-import 'package:caesar_zipher/utils/queue.dart';
 import 'package:ctelnet/ctelnet.dart';
 
 abstract class PrinterListeners {
@@ -9,7 +9,7 @@ abstract class PrinterListeners {
     try {
       if (data.text != "PRC" || !globalState.working) return;
 
-      List<String> codes = await Queue.getQueue();
+      List<String> codes = globalState.codes;
       
       codes.removeAt(codes.length - 1);
       String code = codes.last;
@@ -17,7 +17,7 @@ abstract class PrinterListeners {
       Map<String, String> newFields = {TelnetClient.barcodeFieldName: code};
       await TelnetClient.updateJob(newFields);
 
-      await Queue.loadQueue(codes);
+      await QueueFacade.loadQueue(codes, globalState);
 
       if (codes.isEmpty) {
         globalState.setWorking(false);
