@@ -71,7 +71,6 @@ abstract class PrinterClient {
     
     _lastResponse = msgData;
     _lastResponseDate = DateTime.now();
-    AppLogger.logger.d("data: $_lastResponse");
 
     _onDataTrigger?.call(msgData);
   }
@@ -89,7 +88,7 @@ abstract class PrinterClient {
 
     bool gotResponse = _lastResponseDate.isAfter(prevResponse);
     String response = gotResponse ? _lastResponse : "";
-    AppLogger.logger.i(
+    AppLogger.logger.d(
       "Отправлена команда: $command\nОтвет получен: $gotResponse\nОтвет: $response",
     );
 
