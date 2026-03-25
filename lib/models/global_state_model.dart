@@ -2,6 +2,8 @@ import 'package:caesar_zipher/utils/queue.dart';
 import 'package:flutter/material.dart';
 
 class GlobalStateModel extends ChangeNotifier {
+  String currentGTIN = "";
+  
   bool _working = false;
   bool _printerConnected = false;
   List<String> _codes = [];

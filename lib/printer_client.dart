@@ -4,17 +4,19 @@ import "package:caesar_zipher/app_logger.dart";
 
 typedef OnDataTriggerCallback = void Function(String data);
 
-class TelnetConfig {
+class PrinterConfig {
   String printerHost;
   int printerPort;
   String barcodeFieldName;
+  String gtinFieldName;
 
-  TelnetConfig(this.printerHost, this.printerPort, this.barcodeFieldName);
+  PrinterConfig(this.printerHost, this.printerPort, this.barcodeFieldName, this.gtinFieldName);
 }
 
-abstract class TelnetClient {
+abstract class PrinterClient {
   static CTelnetClient? _client;
   static String _barcodeFieldName = "";
+  static String _gtinFieldName = "";
   static Stream<Message>? _stream;
   static StreamSubscription<Message>? _sub;
   static Function? _onDataTrigger;
@@ -22,9 +24,10 @@ abstract class TelnetClient {
   static DateTime _lastResponseDate = DateTime.now();
 
   static String get barcodeFieldName => _barcodeFieldName;
+  static String get gtinFieldName => _gtinFieldName;
 
   static Future<void> connect(
-    TelnetConfig config, {
+    PrinterConfig config, {
     OnDataTriggerCallback? onDataTrigger,
   }) async {
     if (_client != null && _client!.connected) return;
@@ -44,6 +47,7 @@ abstract class TelnetClient {
     );
 
     _barcodeFieldName = config.barcodeFieldName;
+    _gtinFieldName = config.gtinFieldName;
 
     _stream = await _client!.connect();
     _sub = _stream!.listen(_onData);
@@ -94,9 +98,18 @@ abstract class TelnetClient {
 
   static Future<void> enablePrintNotification() async {
     String response = await sendCommand("SNO|PRC|1|");
-    if (response != TelnetResponse.ok) {
+    if (response != PrinterResponse.ok) {
       throw Exception(
-        "Не удалось включить уведомления о печати (некорректный ответ). Ожидается: ${TelnetResponse.ok}. Получен: $response",
+        "Не удалось включить уведомления о печати (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
+      );
+    }
+  }
+
+  static Future<void> enableJobChangedNotification() async {
+    String response = await sendCommand("SNO|JOB|1|");
+    if (response != PrinterResponse.ok) {
+      throw Exception(
+        "Не удалось включить уведомления об изменении задания печати (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
       );
     }
   }
@@ -111,15 +124,30 @@ abstract class TelnetClient {
     String command = "${commandParts.join("|")}|";
     String response = await sendCommand(command);
 
-    if (response != TelnetResponse.ok) {
+    if (response != PrinterResponse.ok) {
       throw Exception(
-        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${TelnetResponse.ok}. Получен: $response",
+        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${PrinterResponse.ok}. Получен: $response",
       );
     }
   }
+
+  static Future<Map<String, String>> getCurrentJobData() async {
+    Map<String, String> fields = {};
+
+    String content = await sendCommand("GJD");
+    List<String> contentParts = content.split("|");
+    contentParts.removeRange(0, 2);
+    for (String part in contentParts) {
+      List<String> pair = part.split("=");
+      fields[pair[0]] = pair.length > 1 ? pair[1] : "";
+    }
+
+    return fields;
+  }
 }
 
-abstract class TelnetResponse {
+abstract class PrinterResponse {
   static final ok = "ACK";
   static final printComplete = "PRC";
+  static final jobChanged = "JOB";
 }

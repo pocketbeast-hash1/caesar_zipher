@@ -1,28 +1,39 @@
-import 'package:caesar_zipher/app_logger.dart';
+import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/facades/queue_facade.dart';
 import 'package:caesar_zipher/main.dart';
-import 'package:caesar_zipher/telnet_client.dart';
+import 'package:caesar_zipher/printer_client.dart';
 
 abstract class PrinterListeners {
-  static Future<void> onData(String data) async {
-    try {
-      if (data != TelnetResponse.printComplete || !globalState.working) return;
-
-      List<String> codes = globalState.codes;
-
-      codes.removeAt(codes.length - 1);
-
-      if (codes.isEmpty) {
-        globalState.setWorking(false);
-      } else {
-        String code = codes.last;
-        Map<String, String> newFields = {TelnetClient.barcodeFieldName: code};
-        await TelnetClient.updateJob(newFields);
-      }
-
-      await QueueFacade.loadQueue(codes, globalState);
-    } catch (e, s) {
-      AppLogger.logger.e("Ошибка при обработке данных с устройства: $e, $s");
+  static void onData(String data) {
+    if (data == PrinterResponse.printComplete && globalState.working) {
+      _handlePRC();
+    } else if (data == PrinterResponse.jobChanged && globalState.working) {
+      _handleJOB();
     }
+  }
+
+  static Future<void> _handlePRC() async {
+    List<String> codes = globalState.codes;
+
+    codes.removeAt(codes.length - 1);
+
+    bool success = true;
+    if (codes.isEmpty) {
+      success = false;
+    } else {
+      String code = codes.last;
+      success = await PrinterFacade.updateCode(code);
+    }
+
+    if (!success) {
+      globalState.setWorking(false);
+      return;
+    }
+
+    await QueueFacade.loadQueue(codes);
+  }
+
+  static Future<void> _handleJOB() async {
+    await PrinterFacade.updateGlobalCurrentGTIN();
   }
 }

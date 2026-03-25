@@ -7,6 +7,7 @@ class Settings {
   String printerHost;
   int printerPort;
   String barcodeFieldName;
+  String gtinFieldName;
 
   static Future<String> get _localPath async {
     final directory = await getApplicationCacheDirectory();
@@ -18,7 +19,7 @@ class Settings {
     return File('$path/settings.json');
   }
 
-  Settings(this.printerHost, this.printerPort, this.barcodeFieldName);
+  Settings(this.printerHost, this.printerPort, this.barcodeFieldName, this.gtinFieldName);
 
   void operator []=(String key, dynamic value) {
     switch (key) {
@@ -39,6 +40,9 @@ class Settings {
       case "barcodeFieldName":
         barcodeFieldName = value;
         break;
+      case "gtinFieldName":
+        gtinFieldName = value;
+        break;
     }
   }
 
@@ -47,6 +51,7 @@ class Settings {
       "printerHost": printerHost,
       "printerPort": printerPort,
       "barcodeFieldName": barcodeFieldName,
+      "gtinFieldName": gtinFieldName,
     };
 
     return map;
@@ -55,7 +60,7 @@ class Settings {
   static Future<Settings> getSettings() async {
     File file = await _localFile;
     if (!await file.exists()) {
-      return Settings("127.0.0.1", 20000, "DataDM");
+      return Settings("127.0.0.1", 20000, "DataDM", "GTIN");
     }
 
     String content = await file.readAsString();
@@ -64,7 +69,8 @@ class Settings {
     return Settings(
       data.containsKey("printerHost") ? data["printerHost"] : "127.0.0.1", 
       data.containsKey("printerPort") ? data["printerPort"] : 20000, 
-      data.containsKey("barcodeFieldName") ? data["barcodeFieldName"] : "DataDM"
+      data.containsKey("barcodeFieldName") ? data["barcodeFieldName"] : "DataDM",
+      data.containsKey("gtinFieldName") ? data["gtinFieldName"] : "GTIN",
     );
   }
 

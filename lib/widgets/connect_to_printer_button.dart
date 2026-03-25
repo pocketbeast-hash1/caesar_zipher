@@ -1,7 +1,8 @@
 import 'package:caesar_zipher/app_logger.dart';
+import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/listeners/printer_listeners.dart';
 import 'package:caesar_zipher/models/global_state_model.dart';
-import 'package:caesar_zipher/telnet_client.dart';
+import 'package:caesar_zipher/printer_client.dart';
 import 'package:caesar_zipher/utils/settings.dart';
 import 'package:caesar_zipher/widgets/bool_button.dart';
 import 'package:caesar_zipher/widgets/toast_context.dart';
@@ -36,19 +37,22 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
 
     if (val) {
       Settings settings = await Settings.getSettings();
-      promise = TelnetClient.connect(
-        TelnetConfig(
-          settings.printerHost,
-          settings.printerPort,
-          settings.barcodeFieldName,
-        ),
+      PrinterConfig config = PrinterConfig(
+        settings.printerHost,
+        settings.printerPort,
+        settings.barcodeFieldName,
+        settings.gtinFieldName,
+      );
+      promise = PrinterFacade.connect(
+        config,
         onDataTrigger: PrinterListeners.onData,
       );
+
       params[Symbol("pending")] = "Подключение к принтеру...";
       params[Symbol("success")] = "Принтер подключен!";
       params[Symbol("error")] = "Ошибка подключения к принтеру!";
     } else {
-      promise = TelnetClient.disconnect();
+      promise = PrinterFacade.disconnect();
       params[Symbol("pending")] = "Отключение от принтера...";
       params[Symbol("success")] = "Принтер отключен!";
       params[Symbol("error")] = "Ошибка отключения от принтера!";
@@ -56,26 +60,15 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
 
     Function.apply(ToastContext.promise, [promise], params);
 
-    try {
-      await promise;
-      state.setPrinterConnected(val);
-
-      if (val) {
-        TelnetClient.enablePrintNotification().catchError((e, s) {
-          AppLogger.logger.w(
-            "Не удалось включить уведомления о печати по причине: $e, $s",
-          );
+    promise
+        .onError((e, s) {
+          AppLogger.logger.e("Ошибка работы с принтером: $e, $s");
+        })
+        .whenComplete(() {
+          setState(() {
+            waitingResponse = false;
+          });
         });
-      } else {
-        state.setWorking(false);
-      }
-    } catch (e, s) {
-      AppLogger.logger.e("Ошибка работы с принтером: $e, $s");
-    } finally {
-      setState(() {
-        waitingResponse = false;
-      });
-    }
   }
 
   @override

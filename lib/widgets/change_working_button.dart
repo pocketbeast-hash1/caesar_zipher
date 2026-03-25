@@ -1,8 +1,6 @@
-import 'package:caesar_zipher/app_logger.dart';
+import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/models/global_state_model.dart';
-import 'package:caesar_zipher/telnet_client.dart';
 import 'package:caesar_zipher/utils/queue.dart';
-import 'package:caesar_zipher/utils/settings.dart';
 import 'package:caesar_zipher/widgets/bool_button.dart';
 import 'package:caesar_zipher/widgets/toast_context.dart';
 import 'package:flutter/material.dart';
@@ -11,37 +9,31 @@ import 'package:provider/provider.dart';
 class ChangeWorkingButton extends StatelessWidget {
   const ChangeWorkingButton({super.key});
 
-  Future<void> _updateJob() async {
-    try {
-      Settings settings = await Settings.getSettings();
-      List<String> codes = await Queue.getQueue();
-      String code = codes.last;
-
-      Map<String, String> newFields = {settings.barcodeFieldName: code};
-      await TelnetClient.updateJob(newFields);
-      
-    } catch (e, s) {
-      AppLogger.logger.w("Ошибка при обновлении задания: $e, $s");
-    }
+  Future<bool> _updateJob() async {
+    List<String> codes = await Queue.getQueue();
+    String code = codes.last;
+    return await PrinterFacade.updateCode(code);
   }
 
   Future<void> _changeWorking(GlobalStateModel state, bool val) async {
     if (val && !state.printerConnected) {
-      ToastContext.error(
-        "Невозможно установить рабочий режим без подключения к принтеру!",
-      );
+      ToastContext.error("Принтер не подключен!");
       return;
     }
 
     if (val && state.codes.isEmpty) {
-      ToastContext.error(
-        "Невозможно установить рабочий режим без загруженных штрихкодов!",
-      );
+      ToastContext.error("Нет загруженных штрихкодов!");
       return;
     }
 
     if (val) {
-      await _updateJob();
+      bool success = await _updateJob();
+      if (!success) {
+        ToastContext.error(
+          "GTIN загруженных штрихкодов и GTIN макета отличаются!",
+        );
+        return;
+      }
     }
 
     state.setWorking(val);

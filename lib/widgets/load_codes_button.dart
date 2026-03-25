@@ -24,7 +24,7 @@ class LoadCodesButton extends StatelessWidget {
     String content = await file.readAsString();
     List<String> codes = content.split("\n");
 
-    await QueueFacade.loadQueue(codes, state);
+    await QueueFacade.loadQueue(codes);
   }
 
   @override
