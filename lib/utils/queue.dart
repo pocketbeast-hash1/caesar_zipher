@@ -28,6 +28,8 @@ abstract class Queue {
     }
 
     String content = await file.readAsString();
-    return content.split("\n");
+    List<String> codes = content.split("\n").where((element) => element.isNotEmpty,).toList();
+
+    return codes;
   }
 }
