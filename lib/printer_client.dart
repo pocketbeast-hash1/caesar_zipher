@@ -10,7 +10,12 @@ class PrinterConfig {
   String barcodeFieldName;
   String gtinFieldName;
 
-  PrinterConfig(this.printerHost, this.printerPort, this.barcodeFieldName, this.gtinFieldName);
+  PrinterConfig(
+    this.printerHost,
+    this.printerPort,
+    this.barcodeFieldName,
+    this.gtinFieldName,
+  );
 }
 
 abstract class PrinterClient {
@@ -25,6 +30,33 @@ abstract class PrinterClient {
 
   static String get barcodeFieldName => _barcodeFieldName;
   static String get gtinFieldName => _gtinFieldName;
+
+  static void _onData(Message msg) {
+    String msgData = msg.text;
+    msgData = msgData.replaceAll("\r", "");
+    msgData = msgData.replaceAll("\n", "");
+
+    _lastResponse = msgData;
+    _lastResponseDate = DateTime.now();
+
+    _onDataTrigger?.call(msgData);
+  }
+
+  /// Returm map from string like: `field1=value1|field2=value2|field3=value3|`
+  static Map<String, String> _getMapFromStringFields(String content) {
+    Map<String, String> fields = {};
+
+    List<String> contentParts = content
+        .split("|")
+        .where((el) => el.isNotEmpty)
+        .toList();
+    for (String part in contentParts) {
+      List<String> pair = part.split("=");
+      fields[pair[0]] = pair.length > 1 ? pair[1] : "";
+    }
+
+    return fields;
+  }
 
   static Future<void> connect(
     PrinterConfig config, {
@@ -64,17 +96,6 @@ abstract class PrinterClient {
     _client = null;
   }
 
-  static void _onData(Message msg) {
-    String msgData = msg.text;
-    msgData = msgData.replaceAll("\r", "");
-    msgData = msgData.replaceAll("\n", "");
-    
-    _lastResponse = msgData;
-    _lastResponseDate = DateTime.now();
-
-    _onDataTrigger?.call(msgData);
-  }
-
   static Future<String> sendCommand(String command, {int timeout = 5}) async {
     DateTime prevResponse = _lastResponseDate;
 
@@ -93,6 +114,27 @@ abstract class PrinterClient {
     );
 
     return response;
+  }
+
+  static Future<void> changeState(PrinterStates state) async {
+    String response = await sendCommand("SST|${state.state}|");
+    if (response != PrinterResponse.ok) {
+      throw Exception(
+        "Не удалось изменить состояние принтера (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
+      );
+    }
+  }
+
+  static Future<PrinterStates> getState() async {
+    String response = await sendCommand("GST");
+    List<String> parts = response.split("|");
+    if (parts.length < 2) return PrinterStates.undefined;
+
+    String stringState = parts[1];
+    int? intState = int.tryParse(stringState);
+    if (intState == null) return PrinterStates.undefined;
+
+    return PrinterStates.findByValue(intState);
   }
 
   static Future<void> enablePrintNotification() async {
@@ -131,22 +173,45 @@ abstract class PrinterClient {
   }
 
   static Future<Map<String, String>> getCurrentJobData() async {
-    Map<String, String> fields = {};
-
     String content = await sendCommand("GJD");
-    List<String> contentParts = content.split("|");
-    contentParts.removeRange(0, 2);
-    for (String part in contentParts) {
-      List<String> pair = part.split("=");
-      fields[pair[0]] = pair.length > 1 ? pair[1] : "";
-    }
+    Map<String, String> fields = _getMapFromStringFields(content);
 
     return fields;
   }
 }
 
 abstract class PrinterResponse {
-  static final ok = "ACK";
-  static final printComplete = "PRC";
-  static final jobChanged = "JOB";
+  static final String ok = "ACK";
+  static final String printComplete = "PRC";
+  static final String jobChanged = "JOB";
+}
+
+enum PrinterStates {
+  /// can't set, only read
+  shutDown(0),
+
+  /// allow to set
+  startingUp(1),
+
+  /// allow to set
+  shuttingDown(2),
+
+  /// can't set, only read
+  running(3),
+
+  /// can't set, only read
+  offline(4),
+
+  /// can't set, only read
+  undefined(999);
+
+  final int state;
+  const PrinterStates(this.state);
+
+  static PrinterStates findByValue(int value) {
+    return values.firstWhere(
+      (el) => el.state == value,
+      orElse: () => PrinterStates.undefined,
+    );
+  }
 }

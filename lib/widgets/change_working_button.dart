@@ -29,14 +29,11 @@ class ChangeWorkingButton extends StatelessWidget {
     if (val) {
       bool success = await _updateJob();
       if (!success) {
-        ToastContext.error(
-          "GTIN загруженных штрихкодов и GTIN макета отличаются!",
-        );
         return;
       }
     }
 
-    state.setWorking(val);
+    PrinterFacade.setWorking(val);
   }
 
   @override

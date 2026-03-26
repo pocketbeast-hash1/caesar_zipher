@@ -8,28 +8,48 @@ abstract class PrinterFacade {
     PrinterConfig config, {
     OnDataTriggerCallback? onDataTrigger,
   }) async {
-    await PrinterClient.connect(config, onDataTrigger: onDataTrigger);
-    await updateGlobalCurrentGTIN();
+    try {
+      await PrinterClient.connect(config, onDataTrigger: onDataTrigger);
+      await updateGlobalCurrentGTIN();
 
-    globalState.setPrinterConnected(true);
+      globalState.setPrinterConnected(true);
+      await setWorking(false);
 
-    PrinterClient.enablePrintNotification().catchError((e, s) {
-      AppLogger.logger.w(
-        "Не удалось включить уведомления о печати по причине: $e, $s",
-      );
-    });
-    PrinterClient.enableJobChangedNotification().catchError((e, s) {
-      AppLogger.logger.w(
-        "Не удалось включить уведомления об изменении задания печати по причине: $e, $s",
-      );
-    });
+      PrinterClient.enablePrintNotification().catchError((e, s) {
+        AppLogger.logger.w(
+          "Не удалось включить уведомления о печати по причине: $e, $s",
+        );
+      });
+      PrinterClient.enableJobChangedNotification().catchError((e, s) {
+        AppLogger.logger.w(
+          "Не удалось включить уведомления об изменении задания печати по причине: $e, $s",
+        );
+      });
+    } catch (e, s) {
+      AppLogger.logger.e("Ошибка при попытке подключиться к принтеру: $e, $s");
+    }
   }
 
   static Future<void> disconnect() async {
-    await PrinterClient.disconnect();
-    globalState.currentGTIN = "";
-    globalState.setWorking(false);
-    globalState.setPrinterConnected(false);
+    try {
+      await setWorking(false);
+      await PrinterClient.disconnect();
+      globalState.currentGTIN = "";
+      globalState.setPrinterConnected(false);
+    } catch (e, s) {
+      AppLogger.logger.e("Ошибка при попытке отключиться от принтера: $e, $s");
+    }
+  }
+
+  static Future<void> setWorking(bool val) async {
+    try {
+      await PrinterClient.changeState(
+        val ? PrinterStates.startingUp : PrinterStates.shuttingDown,
+      );
+      globalState.setWorking(val);
+    } catch (e, s) {
+      AppLogger.logger.e("Ошибка при попытке поменять статус принтера: $e, $s");
+    }
   }
 
   static Future<void> updateGlobalCurrentGTIN() async {
@@ -45,12 +65,17 @@ abstract class PrinterFacade {
       AppLogger.logger.e(
         "Ошибка при обновлении кода на принтере: GTIN штрихкода ($gtin) не соответствует GTIN группы (${globalState.currentGTIN})",
       );
-      globalState.setWorking(false);
+      await setWorking(false);
       return false;
     }
 
     Map<String, String> newFields = {PrinterClient.barcodeFieldName: newCode};
-    await PrinterClient.updateJob(newFields);
+    try {
+      await PrinterClient.updateJob(newFields);
+    } catch (e, s) {
+      AppLogger.logger.e("Ошибка при обновлении кода на принтере: $e, $s");
+      return false;
+    }
 
     return true;
   }

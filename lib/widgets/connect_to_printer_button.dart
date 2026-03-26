@@ -1,4 +1,3 @@
-import 'package:caesar_zipher/app_logger.dart';
 import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/listeners/printer_listeners.dart';
 import 'package:caesar_zipher/models/global_state_model.dart';
@@ -61,9 +60,6 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
     Function.apply(ToastContext.promise, [promise], params);
 
     promise
-        .onError((e, s) {
-          AppLogger.logger.e("Ошибка работы с принтером: $e, $s");
-        })
         .whenComplete(() {
           setState(() {
             waitingResponse = false;

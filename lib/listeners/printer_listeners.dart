@@ -26,7 +26,7 @@ abstract class PrinterListeners {
     }
 
     if (!success) {
-      globalState.setWorking(false);
+      await PrinterFacade.setWorking(false);
       return;
     }
 
