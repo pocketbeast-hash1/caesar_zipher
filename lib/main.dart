@@ -3,6 +3,7 @@ import "package:caesar_zipher/widgets/wrapper.dart";
 import "package:flutter/material.dart";
 import "package:fluttertoast/fluttertoast.dart";
 import "package:caesar_zipher/widgets/toast_context.dart";
+import "package:package_info_plus/package_info_plus.dart";
 import "package:provider/provider.dart";
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -18,9 +19,22 @@ void main() {
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((info) {
+      globalState.appVersion = info.version;
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

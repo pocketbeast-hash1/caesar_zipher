@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 abstract class GlobalColors {
+  static Color softGray = const Color.fromARGB(255, 197, 197, 197);
+
   static Color goodBackground = Colors.greenAccent;
   static Color badBackground = const Color.fromARGB(255, 251, 134, 134);
   static Color warnBackground = const Color.fromARGB(255, 247, 253, 180);
