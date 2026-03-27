@@ -182,20 +182,10 @@ enum PrinterResponse {
 enum PrinterStates {
   /// can't set, only read
   shutDown(0),
-
-  /// allow to set
   startingUp(1),
-
-  /// allow to set
   shuttingDown(2),
-
-  /// can't set, only read
   running(3),
-
-  /// can't set, only read
   offline(4),
-
-  /// can't set, only read
   undefined(999),
   ;
 

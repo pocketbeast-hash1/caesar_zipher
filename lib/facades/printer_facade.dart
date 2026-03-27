@@ -51,10 +51,10 @@ abstract class PrinterFacade {
           ? await PrinterClient.getState()
           : PrinterStates.offline;
 
-      if (state == PrinterStates.running) {
-        await PrinterClient.changeState(
-          val ? PrinterStates.startingUp : PrinterStates.shuttingDown,
-        );
+      if (val && state != PrinterStates.running) {
+        await PrinterClient.changeState(PrinterStates.running);
+      } else if (!val && state != PrinterStates.offline) {
+        await PrinterClient.changeState(PrinterStates.offline);
       }
 
       globalState.setWorking(val);
