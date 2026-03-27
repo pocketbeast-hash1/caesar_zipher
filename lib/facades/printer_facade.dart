@@ -29,6 +29,13 @@ abstract class PrinterFacade {
           "Не удалось включить уведомления об изменении задания печати по причине: $e, $s",
         );
       });
+      PrinterClient.enableNotification(
+        PrinterNotifications.stateChange,
+      ).catchError((e, s) {
+        AppLogger.logger.w(
+          "Не удалось включить уведомления об изменении состояния по причине: $e, $s",
+        );
+      });
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке подключиться к принтеру: $e, $s");
     }
@@ -57,7 +64,7 @@ abstract class PrinterFacade {
         await PrinterClient.changeState(PrinterStates.offline);
       }
 
-      globalState.setWorking(val);
+      // глобальная переменная состояния working меняется в printer_listener
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке поменять статус принтера: $e, $s");
     }
@@ -70,14 +77,14 @@ abstract class PrinterFacade {
         : "";
   }
 
-  static Future<bool> updateCode(String newCode) async {
+  static Future<void> updateCode(String newCode) async {
     String gtin = CodesValidator.getGTIN(newCode);
     if (globalState.currentGTIN.isNotEmpty && gtin != globalState.currentGTIN) {
       AppLogger.logger.e(
         "Ошибка при обновлении кода на принтере: GTIN штрихкода ($gtin) не соответствует GTIN группы (${globalState.currentGTIN})",
       );
       await setWorking(false);
-      return false;
+      return;
     }
 
     Map<String, String> newFields = {PrinterClient.barcodeFieldName: newCode};
@@ -85,9 +92,7 @@ abstract class PrinterFacade {
       await PrinterClient.updateJob(newFields);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при обновлении кода на принтере: $e, $s");
-      return false;
+      await setWorking(false);
     }
-
-    return true;
   }
 }

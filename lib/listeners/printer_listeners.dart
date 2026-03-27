@@ -8,9 +8,13 @@ abstract class PrinterListeners {
     if (data == PrinterNotifications.printComplete.value &&
         globalState.working) {
       _handlePRC();
-    } else if (data == PrinterNotifications.currentJobChanged.value &&
-        globalState.working) {
+    } else if (data == PrinterNotifications.currentJobChanged.value) {
       _handleJOB();
+    } else if (data.contains(RegExp(r"^STS\|\d\|$"))) {
+      List<String> parts = data.split("|");
+      String strState = parts[1];
+      int intState = int.parse(strState);
+      _handleStateChange(PrinterStates.findByValue(intState));
     }
   }
 
@@ -19,17 +23,9 @@ abstract class PrinterListeners {
 
     codes.removeAt(codes.length - 1);
 
-    bool success = true;
-    if (codes.isEmpty) {
-      success = false;
-    } else {
+    if (codes.isNotEmpty) {
       String code = codes.last;
-      success = await PrinterFacade.updateCode(code);
-    }
-
-    if (!success) {
-      await PrinterFacade.setWorking(false);
-      return;
+      PrinterFacade.updateCode(code);
     }
 
     await QueueFacade.loadQueue(codes);
@@ -37,5 +33,17 @@ abstract class PrinterListeners {
 
   static Future<void> _handleJOB() async {
     await PrinterFacade.updateGlobalCurrentGTIN();
+  }
+
+  static Future<void> _handleStateChange(PrinterStates state) async {
+    bool val = state == PrinterStates.running;
+
+    if (val) {
+      List<String> codes = globalState.codes;
+      String code = codes.last;
+      await PrinterFacade.updateCode(code);
+    }
+
+    globalState.setWorking(val);
   }
 }

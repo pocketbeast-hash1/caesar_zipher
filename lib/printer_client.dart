@@ -104,7 +104,7 @@ abstract class PrinterClient {
     DateTime endTimeout = DateTime.now().add(Duration(seconds: timeout));
     while (!DateTime.now().isAfter(endTimeout) &&
         !_lastResponseDate.isAfter(prevResponse)) {
-      await Future.delayed(Duration(milliseconds: 50));
+      await Future.delayed(Duration(milliseconds: 100));
     }
 
     bool gotResponse = _lastResponseDate.isAfter(prevResponse);
