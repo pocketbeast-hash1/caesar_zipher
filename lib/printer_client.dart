@@ -118,9 +118,9 @@ abstract class PrinterClient {
 
   static Future<void> changeState(PrinterStates state) async {
     String response = await sendCommand("SST|${state.state}|");
-    if (response != PrinterResponse.ok) {
+    if (response != PrinterResponse.ok.value) {
       throw Exception(
-        "Не удалось изменить состояние принтера (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
+        "Не удалось изменить состояние принтера (некорректный ответ). Ожидается: ${PrinterResponse.ok.value}. Получен: $response",
       );
     }
   }
@@ -139,9 +139,9 @@ abstract class PrinterClient {
 
   static Future<void> enableNotification(PrinterNotifications notification) async {
     String response = await sendCommand("SNO|${notification.value}|1|");
-    if (response != PrinterResponse.ok) {
+    if (response != PrinterResponse.ok.value) {
       throw Exception(
-        "Не удалось включить уведомление $notification (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
+        "Не удалось включить уведомление $notification (некорректный ответ). Ожидается: ${PrinterResponse.ok.value}. Получен: $response",
       );
     }
   }
@@ -156,9 +156,9 @@ abstract class PrinterClient {
     String command = "${commandParts.join("|")}|";
     String response = await sendCommand(command);
 
-    if (response != PrinterResponse.ok) {
+    if (response != PrinterResponse.ok.value) {
       throw Exception(
-        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${PrinterResponse.ok}. Получен: $response",
+        "Некорректный ответ от устройства во время обновления полей задания. Ожидается: ${PrinterResponse.ok.value}. Получен: $response",
       );
     }
   }
@@ -171,10 +171,12 @@ abstract class PrinterClient {
   }
 }
 
-abstract class PrinterResponse {
-  static final String ok = "ACK";
-  static final String printComplete = "PRC";
-  static final String jobChanged = "JOB";
+enum PrinterResponse {
+  ok("ACK"),
+  ;
+
+  final String value;
+  const PrinterResponse(this.value);
 }
 
 enum PrinterStates {
@@ -194,7 +196,8 @@ enum PrinterStates {
   offline(4),
 
   /// can't set, only read
-  undefined(999);
+  undefined(999),
+  ;
 
   final int state;
   const PrinterStates(this.state);
