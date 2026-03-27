@@ -5,9 +5,11 @@ import 'package:caesar_zipher/printer_client.dart';
 
 abstract class PrinterListeners {
   static void onData(String data) {
-    if (data == PrinterResponse.printComplete && globalState.working) {
+    if (data == PrinterNotifications.printComplete.value &&
+        globalState.working) {
       _handlePRC();
-    } else if (data == PrinterResponse.jobChanged && globalState.working) {
+    } else if (data == PrinterNotifications.currentJobChanged.value &&
+        globalState.working) {
       _handleJOB();
     }
   }

@@ -15,12 +15,16 @@ abstract class PrinterFacade {
       globalState.setPrinterConnected(true);
       await setWorking(false);
 
-      PrinterClient.enablePrintNotification().catchError((e, s) {
+      PrinterClient.enableNotification(
+        PrinterNotifications.printComplete,
+      ).catchError((e, s) {
         AppLogger.logger.w(
           "Не удалось включить уведомления о печати по причине: $e, $s",
         );
       });
-      PrinterClient.enableJobChangedNotification().catchError((e, s) {
+      PrinterClient.enableNotification(
+        PrinterNotifications.currentJobChanged,
+      ).catchError((e, s) {
         AppLogger.logger.w(
           "Не удалось включить уведомления об изменении задания печати по причине: $e, $s",
         );

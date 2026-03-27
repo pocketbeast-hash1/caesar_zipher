@@ -137,20 +137,11 @@ abstract class PrinterClient {
     return PrinterStates.findByValue(intState);
   }
 
-  static Future<void> enablePrintNotification() async {
-    String response = await sendCommand("SNO|PRC|1|");
+  static Future<void> enableNotification(PrinterNotifications notification) async {
+    String response = await sendCommand("SNO|${notification.value}|1|");
     if (response != PrinterResponse.ok) {
       throw Exception(
-        "Не удалось включить уведомления о печати (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
-      );
-    }
-  }
-
-  static Future<void> enableJobChangedNotification() async {
-    String response = await sendCommand("SNO|JOB|1|");
-    if (response != PrinterResponse.ok) {
-      throw Exception(
-        "Не удалось включить уведомления об изменении задания печати (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
+        "Не удалось включить уведомление $notification (некорректный ответ). Ожидается: ${PrinterResponse.ok}. Получен: $response",
       );
     }
   }
@@ -214,4 +205,21 @@ enum PrinterStates {
       orElse: () => PrinterStates.undefined,
     );
   }
+}
+
+enum PrinterNotifications {
+  stateChange("STS"),
+  printStart("PRS"),
+  printComplete("PRC"),
+  ioOutputChange("OUT"),
+  errorStateChange("ERS"),
+  currentJobChanged("JOB"),
+  ioOutputChangeQueueEmpty("QEM"),
+  ioOutputChangeQueueFull("QFU"),
+  ioOutputChangeQueueHigh("QHI"),
+  ioOutputChangeQueueLow("QLO"),
+  ;
+  
+  final String value;
+  const PrinterNotifications(this.value);
 }
