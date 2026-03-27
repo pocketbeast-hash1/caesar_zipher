@@ -43,7 +43,5 @@ abstract class PrinterListeners {
       String code = codes.last;
       await PrinterFacade.updateCode(code);
     }
-
-    globalState.setWorking(val);
   }
 }

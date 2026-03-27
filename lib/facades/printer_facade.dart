@@ -64,7 +64,7 @@ abstract class PrinterFacade {
         await PrinterClient.changeState(PrinterStates.offline);
       }
 
-      // глобальная переменная состояния working меняется в printer_listener
+      globalState.setWorking(val);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке поменять статус принтера: $e, $s");
     }
