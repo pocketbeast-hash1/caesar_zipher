@@ -43,9 +43,16 @@ abstract class PrinterFacade {
 
   static Future<void> setWorking(bool val) async {
     try {
-      await PrinterClient.changeState(
-        val ? PrinterStates.startingUp : PrinterStates.shuttingDown,
-      );
+      PrinterStates state = globalState.printerConnected
+          ? await PrinterClient.getState()
+          : PrinterStates.offline;
+
+      if (state == PrinterStates.running) {
+        await PrinterClient.changeState(
+          val ? PrinterStates.startingUp : PrinterStates.shuttingDown,
+        );
+      }
+
       globalState.setWorking(val);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке поменять статус принтера: $e, $s");

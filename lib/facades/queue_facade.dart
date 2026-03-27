@@ -4,9 +4,7 @@ import 'package:caesar_zipher/utils/queue.dart';
 
 abstract class QueueFacade {
   static Future<void> loadQueue(List<String> codes) async {
-    if (globalState.printerConnected && globalState.working) {
-      await PrinterFacade.setWorking(false);
-    }
+    await PrinterFacade.setWorking(false);
     await Queue.loadQueue(codes);
     globalState.setCodes(codes);
   }
