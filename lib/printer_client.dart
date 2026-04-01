@@ -1,4 +1,5 @@
 import "dart:async";
+import "package:caesar_zipher/listeners/printer_listeners.dart";
 import "package:ctelnet/ctelnet.dart";
 import "package:caesar_zipher/app_logger.dart";
 
@@ -25,8 +26,9 @@ abstract class PrinterClient {
   static Stream<Message>? _stream;
   static StreamSubscription<Message>? _sub;
   static Function? _onDataTrigger;
-  static String _lastResponse = "";
-  static DateTime _lastResponseDate = DateTime.now();
+  static int _responseNumber = 0;
+  static final Map<int, String> _responseMap = {};
+  static final int _maxResponseMapLength = 15;
 
   static String get barcodeFieldName => _barcodeFieldName;
   static String get gtinFieldName => _gtinFieldName;
@@ -36,13 +38,25 @@ abstract class PrinterClient {
     msgData = msgData.replaceAll("\r", "");
     msgData = msgData.replaceAll("\n", "");
 
-    _lastResponse = msgData;
-    _lastResponseDate = DateTime.now();
+    PrinterNotifications? notificationType =
+        PrinterListeners.getNotificationType(msgData);
+
+    // не нужны ответы от оповещений
+    if (notificationType == null) {
+      _responseNumber++;
+      
+      if (_responseMap.length == _maxResponseMapLength) {
+        List<int> keys = _responseMap.keys.toList();
+        keys.sort();
+        _responseMap.remove(keys.first);
+      }
+      _responseMap[_responseNumber] = msgData;
+    }
 
     _onDataTrigger?.call(msgData);
   }
 
-  /// Returm map from string like: `field1=value1|field2=value2|field3=value3|`
+  /// Returm map from string like: `"field1=value1|field2=value2|field3=value3|"`
   static Map<String, String> _getMapFromStringFields(String content) {
     Map<String, String> fields = {};
 
@@ -97,20 +111,19 @@ abstract class PrinterClient {
   }
 
   static Future<String> sendCommand(String command, {int timeout = 5}) async {
-    DateTime prevResponse = _lastResponseDate;
-
+    int currentResponseNumber = _responseNumber + 1;
     _client?.send("$command\r\n");
 
     DateTime endTimeout = DateTime.now().add(Duration(seconds: timeout));
-    while (!DateTime.now().isAfter(endTimeout) &&
-        !_lastResponseDate.isAfter(prevResponse)) {
+    while (DateTime.now().isBefore(endTimeout) &&
+        _responseNumber < currentResponseNumber) {
       await Future.delayed(Duration(milliseconds: 100));
     }
 
-    bool gotResponse = _lastResponseDate.isAfter(prevResponse);
-    String response = gotResponse ? _lastResponse : "";
+    bool gotResponse = _responseMap.containsKey(currentResponseNumber);
+    String response = gotResponse ? _responseMap[currentResponseNumber]! : "";
     AppLogger.logger.d(
-      "Отправлена команда: $command\nОтвет получен: $gotResponse\nОтвет: $response",
+      "Отправлена команда: $command\nОтвет получен: $gotResponse\nНомер ответа: $currentResponseNumber\nОтвет: $response",
     );
 
     return response;
@@ -137,7 +150,9 @@ abstract class PrinterClient {
     return PrinterStates.findByValue(intState);
   }
 
-  static Future<void> enableNotification(PrinterNotifications notification) async {
+  static Future<void> enableNotification(
+    PrinterNotifications notification,
+  ) async {
     String response = await sendCommand("SNO|${notification.value}|1|");
     if (response != PrinterResponse.ok.value) {
       throw Exception(
@@ -172,8 +187,7 @@ abstract class PrinterClient {
 }
 
 enum PrinterResponse {
-  ok("ACK"),
-  ;
+  ok("ACK");
 
   final String value;
   const PrinterResponse(this.value);
@@ -186,8 +200,7 @@ enum PrinterStates {
   shuttingDown(2),
   running(3),
   offline(4),
-  undefined(999),
-  ;
+  undefined(999);
 
   final int state;
   const PrinterStates(this.state);
@@ -210,9 +223,8 @@ enum PrinterNotifications {
   ioOutputChangeQueueEmpty("QEM"),
   ioOutputChangeQueueFull("QFU"),
   ioOutputChangeQueueHigh("QHI"),
-  ioOutputChangeQueueLow("QLO"),
-  ;
-  
+  ioOutputChangeQueueLow("QLO");
+
   final String value;
   const PrinterNotifications(this.value);
 }

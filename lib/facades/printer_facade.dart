@@ -15,27 +15,22 @@ abstract class PrinterFacade {
       globalState.setPrinterConnected(true);
       await setWorking(false);
 
-      PrinterClient.enableNotification(
+      List<PrinterNotifications> notificationsToEnable = [
         PrinterNotifications.printComplete,
-      ).catchError((e, s) {
-        AppLogger.logger.w(
-          "Не удалось включить уведомления о печати по причине: $e, $s",
-        );
-      });
-      PrinterClient.enableNotification(
         PrinterNotifications.currentJobChanged,
-      ).catchError((e, s) {
-        AppLogger.logger.w(
-          "Не удалось включить уведомления об изменении задания печати по причине: $e, $s",
-        );
-      });
-      PrinterClient.enableNotification(
         PrinterNotifications.stateChange,
-      ).catchError((e, s) {
-        AppLogger.logger.w(
-          "Не удалось включить уведомления об изменении состояния по причине: $e, $s",
-        );
-      });
+      ];
+      for (PrinterNotifications notification in notificationsToEnable) {
+        PrinterClient.enableNotification(notification).catchError((e, s) {
+          AppLogger.logger.w(
+            "Не удалось включить уведомление $notification по причине: $e, $s",
+          );
+        });
+
+        // небольшая задержка, чтобы ответы не приходили одновременно,
+        // и клиент принтера мог их нормально обработать
+        await Future.delayed(Duration(milliseconds: 100));
+      }
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке подключиться к принтеру: $e, $s");
     }
@@ -63,8 +58,6 @@ abstract class PrinterFacade {
       } else if (!val && state != PrinterStates.offline) {
         await PrinterClient.changeState(PrinterStates.offline);
       }
-
-      globalState.setWorking(val);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке поменять статус принтера: $e, $s");
     }
