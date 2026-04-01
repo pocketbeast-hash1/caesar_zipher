@@ -71,7 +71,13 @@ abstract class PrinterFacade {
   }
 
   static Future<void> updateCode(String newCode) async {
-    String gtin = CodesValidator.getGTIN(newCode);
+    String gtin = "";
+    try {
+      gtin = CodesValidator.getGTIN(newCode);
+    } catch (e, s) {
+      AppLogger.logger.w("Ошибка при попытке получить GTIN кода маркировки: $e, $s");
+    }
+    
     if (globalState.currentGTIN.isNotEmpty && gtin != globalState.currentGTIN) {
       AppLogger.logger.e(
         "Ошибка при обновлении кода на принтере: GTIN штрихкода ($gtin) не соответствует GTIN группы (${globalState.currentGTIN})",
