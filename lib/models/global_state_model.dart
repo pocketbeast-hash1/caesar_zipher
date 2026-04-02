@@ -12,6 +12,8 @@ class GlobalStateModel extends ChangeNotifier {
   final List<String> _logs = [];
   final int _logsMaxLength = 100;
 
+  bool _debugMode = false;
+
   bool get working => _working;
   void setWorking(bool val) {
     _working = val;
@@ -37,6 +39,12 @@ class GlobalStateModel extends ChangeNotifier {
     }
 
     _logs.addAll(newLogs);
+    notifyListeners();
+  }
+
+  bool get debugMode => _debugMode;
+  set debugMode(bool val) {
+    _debugMode = val;
     notifyListeners();
   }
 

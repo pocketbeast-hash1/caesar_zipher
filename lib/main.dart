@@ -11,10 +11,13 @@ GlobalStateModel globalState = GlobalStateModel();
 
 void main() {
   runApp(
-    MaterialApp(
-      builder: FToastBuilder(),
-      home: MainApp(),
-      navigatorKey: navigatorKey,
+    ChangeNotifierProvider(
+      create: (BuildContext context) => globalState,
+      child: MaterialApp(
+        builder: FToastBuilder(),
+        home: MainApp(),
+        navigatorKey: navigatorKey,
+      ),
     ),
   );
 }
@@ -41,12 +44,9 @@ class _MainAppState extends State<MainApp> {
       backgroundColor: Colors.white,
       body: ToastContext(
         child: Center(
-          child: ChangeNotifierProvider(
-            create: (context) => globalState,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(width: 1200, height: 800, child: Wrapper()),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(width: 1200, height: 800, child: Wrapper()),
           ),
         ),
       ),

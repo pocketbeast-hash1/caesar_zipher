@@ -1,3 +1,4 @@
+import 'package:caesar_zipher/app_logger.dart';
 import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/facades/queue_facade.dart';
 import 'package:caesar_zipher/main.dart';
@@ -34,6 +35,7 @@ abstract class PrinterListeners {
     List<String> codes = globalState.codes;
 
     codes.removeAt(codes.length - 1);
+    AppLogger.logger.d("codes buffer: $codes");
 
     if (codes.isNotEmpty) {
       String code = codes.last;
