@@ -18,7 +18,7 @@ abstract class Queue {
       await file.create();
     }
 
-    await file.writeAsString( codes.join("\n") );
+    await file.writeAsString(codes.join("\n"));
   }
 
   static Future<List<String>> getQueue() async {
@@ -28,7 +28,11 @@ abstract class Queue {
     }
 
     String content = await file.readAsString();
-    List<String> codes = content.split("\n").where((element) => element.isNotEmpty,).toList();
+    List<String> codes = content
+        .split("\n")
+        .where((element) => element.isNotEmpty)
+        .map((element) => element.replaceAll("\n", "").replaceAll("\r", ""))
+        .toList();
 
     return codes;
   }
