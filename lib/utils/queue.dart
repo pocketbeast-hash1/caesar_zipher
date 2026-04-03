@@ -36,4 +36,15 @@ abstract class Queue {
 
     return codes;
   }
+
+  static Future<List<String>> getQueueFromFile(File file) async {
+    String content = await file.readAsString();
+    List<String> codes = content
+        .split("\n")
+        .where((element) => element.isNotEmpty)
+        .map((element) => element.replaceAll("\n", "").replaceAll("\r", ""))
+        .toList();
+
+    return codes;
+  }
 }
