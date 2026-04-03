@@ -57,8 +57,16 @@ abstract class PrinterListeners {
 
     if (val) {
       List<String> codes = globalState.codes;
-      String code = codes.last;
-      PrinterFacade.updateCode(code);
+
+      if (codes.isNotEmpty) {
+        String code = codes.last;
+        PrinterFacade.updateCode(code);
+      } else {
+        AppLogger.logger.e(
+          "Не удалось изменить состояние принтера: нет загруженных кодов маркировки!",
+        );
+        PrinterFacade.setWorking(false);
+      }
     }
 
     globalState.setWorking(val);
