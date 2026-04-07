@@ -86,7 +86,8 @@ abstract class PrinterFacade {
       return;
     }
 
-    Map<String, String> newFields = {PrinterClient.barcodeFieldName: newCode};
+    String nonShielded = CodesValidator.getCodeWithNonShieldedSeparatorGS1(newCode);
+    Map<String, String> newFields = {PrinterClient.barcodeFieldName: nonShielded};
     try {
       await PrinterClient.updateJob(newFields);
     } catch (e, s) {
