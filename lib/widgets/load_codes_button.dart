@@ -15,7 +15,7 @@ class LoadCodesButton extends StatelessWidget {
   Future<void> _onPress(GlobalStateModel state) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ["txt"],
+      allowedExtensions: ["txt", "csv"],
     );
 
     if (result == null) {
