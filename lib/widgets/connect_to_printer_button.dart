@@ -39,8 +39,9 @@ class _ConnectToPrinterButtonState extends State<ConnectToPrinterButton> {
       PrinterConfig config = PrinterConfig(
         settings.printerHost,
         settings.printerPort,
-        settings.barcodeFieldName,
-        settings.gtinFieldName,
+        settings.gtinField,
+        settings.serialNumberField,
+        settings.cryptoPartsFields,
       );
       promise = PrinterFacade.connect(
         config,

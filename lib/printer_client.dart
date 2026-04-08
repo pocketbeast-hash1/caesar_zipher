@@ -8,21 +8,25 @@ typedef OnDataTriggerCallback = void Function(String data);
 class PrinterConfig {
   String printerHost;
   int printerPort;
-  String barcodeFieldName;
-  String gtinFieldName;
+  String gtinField;
+  String serialNumberField;
+  List<String> cryptoPartsFields;
 
   PrinterConfig(
     this.printerHost,
     this.printerPort,
-    this.barcodeFieldName,
-    this.gtinFieldName,
+    this.gtinField,
+    this.serialNumberField,
+    this.cryptoPartsFields,
   );
 }
 
 abstract class PrinterClient {
+  static String _gtinField = "";
+  static String _serialNumberField = "";
+  static List<String> _cryptoPartsFields = [];
+
   static CTelnetClient? _client;
-  static String _barcodeFieldName = "";
-  static String _gtinFieldName = "";
   static Stream<Message>? _stream;
   static StreamSubscription<Message>? _sub;
   static Function? _onDataTrigger;
@@ -30,8 +34,9 @@ abstract class PrinterClient {
   static final Map<int, String> _responseMap = {};
   static final int _maxResponseMapLength = 15;
 
-  static String get barcodeFieldName => _barcodeFieldName;
-  static String get gtinFieldName => _gtinFieldName;
+  static String get gtinField => _gtinField;
+  static String get serialNumberField => _serialNumberField;
+  static List<String> get cryptoPartsFields => _cryptoPartsFields;
 
   static void _onData(Message msg) {
     String msgData = msg.text;
@@ -92,8 +97,9 @@ abstract class PrinterClient {
       },
     );
 
-    _barcodeFieldName = config.barcodeFieldName;
-    _gtinFieldName = config.gtinFieldName;
+    _gtinField = config.gtinField;
+    _serialNumberField = config.serialNumberField;
+    _cryptoPartsFields = config.cryptoPartsFields;
 
     _stream = await _client!.connect();
     _sub = _stream!.listen(_onData);

@@ -65,29 +65,35 @@ abstract class PrinterFacade {
 
   static Future<void> updateGlobalCurrentGTIN() async {
     Map<String, String> fields = await PrinterClient.getCurrentJobData();
-    globalState.currentGTIN = fields.containsKey(PrinterClient.gtinFieldName)
-        ? fields[PrinterClient.gtinFieldName]!
+    globalState.currentGTIN = fields.containsKey(PrinterClient.gtinField)
+        ? fields[PrinterClient.gtinField]!
         : "";
   }
 
   static Future<void> updateCode(String newCode) async {
-    String gtin = "";
-    try {
-      gtin = CodesValidator.getGTIN(newCode);
-    } catch (e, s) {
-      AppLogger.logger.w("Ошибка при попытке получить GTIN кода маркировки: $e, $s");
-    }
-    
-    if (globalState.currentGTIN.isNotEmpty && gtin != globalState.currentGTIN) {
+    CodeStructure codeStructure = CodesValidator.getCodeStructure(newCode);
+
+    if (codeStructure.gtin != globalState.currentGTIN) {
       AppLogger.logger.e(
-        "Ошибка при обновлении кода на принтере: GTIN штрихкода ($gtin) не соответствует GTIN группы (${globalState.currentGTIN})",
+        "Ошибка при обновлении кода на принтере: GTIN штрихкода (${codeStructure.gtin}) не соответствует GTIN группы (${globalState.currentGTIN})",
       );
       await setWorking(false);
       return;
     }
 
-    String nonShielded = CodesValidator.getCodeWithNonShieldedSeparatorGS1(newCode);
-    Map<String, String> newFields = {PrinterClient.barcodeFieldName: nonShielded};
+    Map<String, String> newFields = {
+      PrinterClient.serialNumberField: codeStructure.serialNumber,
+    };
+
+    for (int i = 0; i < PrinterClient.cryptoPartsFields.length; i++) {
+      String fieldName = PrinterClient.cryptoPartsFields[i];
+      String fieldValue = codeStructure.cryptoParts.length - 1 <= i
+          ? codeStructure.cryptoParts[i]
+          : "";
+
+      newFields[fieldName] = fieldValue;
+    }
+
     try {
       await PrinterClient.updateJob(newFields);
     } catch (e, s) {
