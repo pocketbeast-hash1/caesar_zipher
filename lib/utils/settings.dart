@@ -59,7 +59,11 @@ class Settings {
         if (value.runtimeType == List<String>) {
           finalVal = value;
         } else if (value.runtimeType == String) {
-          finalVal = value.split(",").map((elem) => elem.trim()).toList().cast<String>();
+          finalVal = value
+              .split(",")
+              .map((elem) => elem.trim())
+              .toList()
+              .cast<String>();
         } else {
           throw Exception("Invalid value: $value. Need List<String>");
         }
@@ -86,6 +90,7 @@ class Settings {
     if (!await file.exists()) {
       return Settings("127.0.0.1", 20000, "GTIN", "SerialNumber", [
         "CryptoPart",
+        "CryptoPart2",
       ]);
     }
 
@@ -101,11 +106,11 @@ class Settings {
           : "SerialNumber",
       data.containsKey("cryptoPartsFields")
           ? data["cryptoPartsFields"].cast<String>()
-          : ["CryptoPart"],
+          : ["CryptoPart", "CryptoPart2"],
     );
   }
 
-  Future<void> save() async {
+  Future<File> save() async {
     String json = jsonEncode(toMap());
 
     File file = await _localFile;
@@ -114,5 +119,7 @@ class Settings {
     }
 
     await file.writeAsString(json);
+
+    return file;
   }
 }

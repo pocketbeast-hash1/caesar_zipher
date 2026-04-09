@@ -12,7 +12,10 @@ class ToastContext extends StatefulWidget {
   @override
   State<ToastContext> createState() => _ToastContextState();
 
-  static void success(String text) {
+  static void success(
+    String text, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
     _fToast.removeCustomToast();
     _fToast.showToast(
       child: _ToastContainer(
@@ -20,10 +23,14 @@ class ToastContext extends StatefulWidget {
         icon: Icon(Icons.check),
         text: text,
       ),
+      toastDuration: duration,
     );
   }
 
-  static void error(String text) {
+  static void error(
+    String text, {
+    Duration duration = const Duration(seconds: 2),
+  }) {
     _fToast.removeCustomToast();
     _fToast.showToast(
       child: _ToastContainer(
@@ -31,12 +38,13 @@ class ToastContext extends StatefulWidget {
         icon: Icon(Icons.error_outline),
         text: text,
       ),
+      toastDuration: duration,
     );
   }
 
   static void promise(
-    Future promise,
-    { String? pending,
+    Future promise, {
+    String? pending,
     String? success,
     String? error,
   }) {
@@ -53,8 +61,12 @@ class ToastContext extends StatefulWidget {
 
     String finalState = "pending";
     promise
-        .then((val) { finalState = "success"; })
-        .onError((err, trace) { finalState = "error"; })
+        .then((val) {
+          finalState = "success";
+        })
+        .onError((err, trace) {
+          finalState = "error";
+        })
         .whenComplete(() {
           _fToast.removeCustomToast();
           if (finalState == "success" && success != null) {
