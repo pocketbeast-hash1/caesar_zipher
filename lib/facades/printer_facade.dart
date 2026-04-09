@@ -90,7 +90,7 @@ abstract class PrinterFacade {
 
     for (int i = 0; i < PrinterClient.cryptoPartsFields.length; i++) {
       String fieldName = PrinterClient.cryptoPartsFields[i];
-      String fieldValue = codeStructure.cryptoParts.length - 1 <= i
+      String fieldValue = i <= codeStructure.cryptoParts.length - 1
           ? codeStructure.cryptoParts[i]
           : "";
 
