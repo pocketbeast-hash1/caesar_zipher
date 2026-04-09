@@ -33,6 +33,7 @@ abstract class PrinterFacade {
       }
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке подключиться к принтеру: $e, $s");
+      rethrow;
     }
   }
 
@@ -44,6 +45,7 @@ abstract class PrinterFacade {
       globalState.setPrinterConnected(false);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке отключиться от принтера: $e, $s");
+      rethrow;
     }
   }
 
@@ -60,6 +62,7 @@ abstract class PrinterFacade {
       }
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке поменять статус принтера: $e, $s");
+      rethrow;
     }
   }
 
@@ -99,6 +102,7 @@ abstract class PrinterFacade {
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при обновлении кода на принтере: $e, $s");
       await setWorking(false);
+      rethrow;
     }
   }
 }
