@@ -24,11 +24,15 @@ class Box extends StatelessWidget {
     this.direction,
     this.stretch,
     this.child,
+    this.firstAxisAlignment,
+    this.secondAxisAlignment,
   });
 
   final Axis? direction;
   final bool? stretch;
   final Widget? child;
+  final MainAxisAlignment? firstAxisAlignment;
+  final MainAxisAlignment? secondAxisAlignment;
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +40,15 @@ class Box extends StatelessWidget {
       child: Flex(
         direction: direction == Axis.vertical ? Axis.horizontal : Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: secondAxisAlignment ?? MainAxisAlignment.center,
         mainAxisSize: (stretch ?? false) ? MainAxisSize.max : MainAxisSize.min,
         children: [
           Flex(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: (stretch ?? false) ? MainAxisSize.max : MainAxisSize.min,
+            mainAxisAlignment: firstAxisAlignment ?? MainAxisAlignment.center,
+            mainAxisSize: (stretch ?? false)
+                ? MainAxisSize.max
+                : MainAxisSize.min,
             spacing: 10,
             direction: direction ?? Axis.horizontal,
             children: child != null ? [child!] : [],
