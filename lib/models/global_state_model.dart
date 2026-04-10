@@ -5,6 +5,7 @@ class GlobalStateModel extends ChangeNotifier {
   String appVersion = "???";
   String currentGTIN = "";
   
+  String _currentFile = "";
   bool _working = false;
   bool _printerConnected = false;
   List<String> _codes = [];
@@ -13,6 +14,12 @@ class GlobalStateModel extends ChangeNotifier {
   final int _logsMaxLength = 100;
 
   bool _debugMode = false;
+
+  String get currentFile => _currentFile;
+  set currentFile(String newVal) {
+    _currentFile = newVal;
+    notifyListeners();
+  }
 
   bool get working => _working;
   void setWorking(bool val) {

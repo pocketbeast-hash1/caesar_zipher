@@ -5,7 +5,6 @@ import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/facades/queue_facade.dart';
 import 'package:caesar_zipher/models/global_state_model.dart';
 import 'package:caesar_zipher/styles/colors.dart';
-import 'package:caesar_zipher/utils/queue.dart';
 import 'package:caesar_zipher/widgets/caesar_dialog.dart';
 import 'package:caesar_zipher/widgets/toast_context.dart';
 import 'package:file_picker/file_picker.dart';
@@ -26,7 +25,7 @@ class LoadCodesButton extends StatelessWidget {
     }
 
     File file = File(result.files.single.path!);
-    List<String> codes = await Queue.getQueueFromFile(file);
+    List<String> codes = await QueueFacade.getQueueFromFile(file);
 
     await PrinterFacade.setWorking(false);
     await QueueFacade.loadQueue(codes);
