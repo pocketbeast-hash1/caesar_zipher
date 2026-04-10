@@ -52,7 +52,9 @@ abstract class PrinterListeners {
     await PrinterFacade.updateGlobalCurrentGTIN();
   }
 
-  static void _handleStateChange(PrinterStates state) {
+  static Future<void> _handleStateChange(PrinterStates state) async {
+    await Future.delayed(Duration(milliseconds: 100));
+    
     bool val = state == PrinterStates.running;
 
     if (val) {
