@@ -1,10 +1,11 @@
 import 'package:caesar_zipher/utils/queue.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GlobalStateModel extends ChangeNotifier {
   String appVersion = "???";
   String currentGTIN = "";
-  
+
   String _currentFile = "";
   bool _working = false;
   bool _printerConnected = false;
@@ -18,6 +19,11 @@ class GlobalStateModel extends ChangeNotifier {
   String get currentFile => _currentFile;
   set currentFile(String newVal) {
     _currentFile = newVal;
+
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString("currentFile", _currentFile);
+    });
+
     notifyListeners();
   }
 
@@ -57,6 +63,9 @@ class GlobalStateModel extends ChangeNotifier {
 
   Future<void> _asyncInit() async {
     _codes = await Queue.getQueue();
+    _currentFile =
+        (await SharedPreferences.getInstance()).getString("currentFile") ?? "";
+
     notifyListeners();
   }
 
