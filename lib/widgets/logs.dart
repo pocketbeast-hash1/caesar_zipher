@@ -21,6 +21,18 @@ class Logs extends StatefulWidget {
 }
 
 class _LogsState extends State<Logs> {
+  final ScrollController _scrollController = ScrollController();
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   Color _getLogColor(String log) {
     String prefix = log.substring(0, 3);
     if (_logColors.containsKey(prefix)) {
@@ -29,16 +41,23 @@ class _LogsState extends State<Logs> {
       return Colors.transparent;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Consumer<GlobalStateModel>(
       builder: (context, state, child) {
+        if (state.autoScroll) {
+          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+            _scrollToBottom();
+          });
+        }
+
         return BoxContainer(
           child: Column(
             children: [
               Expanded(
                 child: ListView.builder(
+                  controller: _scrollController,
                   shrinkWrap: true,
                   itemCount: state.logs.length,
                   itemBuilder: (BuildContext context, int index) {

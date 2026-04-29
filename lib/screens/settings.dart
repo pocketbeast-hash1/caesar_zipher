@@ -170,48 +170,84 @@ class _DevInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 5,
+    return Consumer<GlobalStateModel>(
+      builder: (context, state, children) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 5,
+          children: [
+            DefaultTextStyle(
+              style: TextStyle(
+                color: GlobalColors.softGray,
+                fontSize: _fontSize,
+                fontWeight: _fontWeight,
+              ),
+              child: Text("Версия: ${globalState.appVersion}"),
+            ),
+            _DevSwitch(
+              text: "Отладка",
+              fontSize: _fontSize,
+              fontWeight: _fontWeight,
+              switchValue: state.debugMode,
+              onToggle: (bool value) {
+                state.debugMode = value;
+              },
+            ),
+            _DevSwitch(
+              text: "Автопрокрутка",
+              fontSize: _fontSize,
+              fontWeight: _fontWeight,
+              switchValue: state.autoScroll,
+              onToggle: (bool value) {
+                state.autoScroll = value;
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DevSwitch extends StatelessWidget {
+  const _DevSwitch({
+    required this.text,
+    required this.fontSize,
+    required this.fontWeight,
+    required this.switchValue,
+    required this.onToggle,
+  });
+
+  final String text;
+  final double fontSize;
+  final FontWeight fontWeight;
+  final bool switchValue;
+  final void Function(bool) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 10,
       children: [
         DefaultTextStyle(
           style: TextStyle(
             color: GlobalColors.softGray,
-            fontSize: _fontSize,
-            fontWeight: _fontWeight,
+            fontSize: fontSize,
+            fontWeight: fontWeight,
           ),
-          child: Text("Версия: ${globalState.appVersion}"),
+          child: Text(text),
         ),
-        Consumer<GlobalStateModel>(
-          builder: (context, state, children) {
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 10,
-              children: [
-                DefaultTextStyle(
-                  style: TextStyle(
-                    color: GlobalColors.softGray,
-                    fontSize: _fontSize,
-                    fontWeight: _fontWeight,
-                  ),
-                  child: Text("Отладка"),
-                ),
-                FlutterSwitch(
-                  value: state.debugMode,
-                  inactiveColor: GlobalColors.boxBackground,
-                  activeColor: GlobalColors.goodBackground,
-                  toggleColor: GlobalColors.softGray,
-                  height: _fontSize,
-                  width: _fontSize * 3,
-                  onToggle: (bool value) {
-                    state.debugMode = value;
-                  },
-                ),
-              ],
-            );
-          },
+        FlutterSwitch(
+          value: switchValue,
+          inactiveColor: GlobalColors.boxBackground,
+          activeColor: GlobalColors.goodBackground,
+          toggleColor: GlobalColors.softGray,
+          height: fontSize,
+          width: fontSize * 3,
+          onToggle: onToggle,
         ),
       ],
     );

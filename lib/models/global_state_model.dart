@@ -16,6 +16,7 @@ class GlobalStateModel extends ChangeNotifier {
   final int _logsMaxLength = 100;
 
   bool _debugMode = false;
+  bool _autoScroll = true;
 
   String get currentFile => _currentFile;
   set currentFile(String newVal) {
@@ -62,10 +63,24 @@ class GlobalStateModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get autoScroll => _autoScroll;
+  set autoScroll(bool val) {
+    _autoScroll = val;
+
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool("scrollToBottom", _autoScroll);
+    });
+
+    notifyListeners();
+  }
+
   Future<void> _asyncInit() async {
     _codes = await Queue.getQueue();
     _currentFile =
         (await SharedPreferences.getInstance()).getString("currentFile") ?? "";
+    _autoScroll =
+        (await SharedPreferences.getInstance()).getBool("scrollToBottom") ??
+        true;
 
     notifyListeners();
   }
