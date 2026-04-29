@@ -1,6 +1,34 @@
-!include "MUI2.nsh"
+﻿!include "MUI2.nsh"
+!include "nsDialogs.nsh"
+
+Var Dialog
+Var Checkbox
+Var DeleteAppData
 
 !define MUI_ICON "icon.ico"
+
+Function un.uninstPageCreate
+    nsDialogs::Create 1018
+    Pop $Dialog
+
+    ${If} $Dialog == error
+        Abort
+    ${EndIf}
+
+    ${NSD_CreateLabel} 0 0 100% 20u "Удалить дополнительные данные приложения?"
+    Pop $0
+
+    ${NSD_CreateCheckbox} 0 25u 100% 10u "Удалить папку приложения из AppData (настройки, кэш)"
+    Pop $Checkbox
+
+    ${NSD_SetState} $Checkbox ${BST_UNCHECKED}
+
+    nsDialogs::Show
+FunctionEnd
+
+Function un.uninstPageLeave
+    ${NSD_GetState} $Checkbox $DeleteAppData
+FunctionEnd
 
 RequestExecutionLevel admin
 
@@ -12,7 +40,7 @@ InstallDirRegKey HKCU "Software\caesar_zipher" ""
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-!insertmacro MUI_UNPAGE_CONFIRM
+UninstPage custom un.uninstPageCreate un.uninstPageLeave
 !insertmacro MUI_UNPAGE_INSTFILES
 
 !insertmacro MUI_LANGUAGE "Russian"
@@ -43,9 +71,12 @@ SectionEnd
 
 Section "Uninstall"
     RMDir /r "$INSTDIR"
-    RMDir /r "$APPDATA\caesar_zipher"
-    RMDir /r "$LOCALAPPDATA\caesar_zipher"
-    
+
+    ${If} $DeleteAppData == ${BST_CHECKED}
+        RMDir /r "$APPDATA\caesar_zipher"
+        RMDir /r "$LOCALAPPDATA\caesar_zipher"
+    ${EndIf}
+
     Delete "$SMPROGRAMS\Caesar Zipher.lnk"
     Delete "$DESKTOP\Caesar Zipher.lnk"
     
