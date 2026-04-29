@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:caesar_zipher/app_logger.dart';
 import 'package:caesar_zipher/facades/printer_facade.dart';
 import 'package:caesar_zipher/facades/queue_facade.dart';
@@ -35,7 +36,6 @@ abstract class PrinterListeners {
     List<String> codes = globalState.codes;
 
     codes.removeAt(codes.length - 1);
-    AppLogger.logger.d("codes buffer: $codes");
 
     if (codes.isNotEmpty) {
       String code = codes.last;
@@ -54,7 +54,7 @@ abstract class PrinterListeners {
 
   static Future<void> _handleStateChange(PrinterStates state) async {
     await Future.delayed(Duration(milliseconds: 100));
-    
+
     bool val = state == PrinterStates.running;
 
     if (val) {
@@ -72,5 +72,32 @@ abstract class PrinterListeners {
     }
 
     globalState.setWorking(val);
+  }
+
+  static Future<void> keepAliveTimer(Timer timer) async {
+    if (globalState.keepAliveProcessing) { return; }
+    
+    String response;
+    try {
+      response = await PrinterClient.sendCommand("GST", timeout: 1);
+    } catch (err) {
+      response = "";
+    }
+
+    if (response.isEmpty) {
+      globalState.keepAliveProcessing = true;
+
+      AppLogger.logger.w(
+        "Потеряно соединение с принтером! Попытка переподключиться...",
+      );
+
+      try {
+        await PrinterFacade.reconnect();
+      } catch (err) {
+        AppLogger.logger.e("Не удалось восстановить соединение!");
+      }
+
+      globalState.keepAliveProcessing = false;
+    }
   }
 }

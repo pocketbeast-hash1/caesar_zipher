@@ -9,6 +9,9 @@ abstract class PrinterFacade {
     OnDataTriggerCallback? onDataTrigger,
   }) async {
     try {
+      globalState.keepAliveProcessing = false;
+      PrinterClient.stopKeepAlive();
+
       await PrinterClient.connect(config, onDataTrigger: onDataTrigger);
       await updateGlobalCurrentGTIN();
 
@@ -33,6 +36,11 @@ abstract class PrinterFacade {
       }
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке подключиться к принтеру: $e, $s");
+      
+      globalState.currentGTIN = "";
+      globalState.setPrinterConnected(false);
+      globalState.setWorking(false);
+
       rethrow;
     }
   }
@@ -45,6 +53,27 @@ abstract class PrinterFacade {
       globalState.setPrinterConnected(false);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке отключиться от принтера: $e, $s");
+
+      globalState.currentGTIN = "";
+      globalState.setPrinterConnected(false);
+      globalState.setWorking(false);
+
+      rethrow;
+    } finally {
+      globalState.keepAliveProcessing = false;
+      PrinterClient.stopKeepAlive();
+    }
+  }
+
+  /// Обновляет только состояние клиента принтера. Не обновляет КМ. Не обновляет настройки. Не убирает keepAlive.
+  static Future<void> reconnect() async {
+    globalState.setPrinterConnected(false);
+
+    try {
+      await PrinterClient.reconnect();
+      globalState.setPrinterConnected(true);
+    } catch (err, s) {
+      AppLogger.logger.e("Ошибка при попытке переподключиться к принтеру: $err, $s");
       rethrow;
     }
   }

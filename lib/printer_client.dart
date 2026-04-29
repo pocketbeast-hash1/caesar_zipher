@@ -30,6 +30,8 @@ abstract class PrinterClient {
   static Stream<Message>? _stream;
   static StreamSubscription<Message>? _sub;
   static Function? _onDataTrigger;
+  static Timer? _keepAlive;
+
   static int _responseNumber = 0;
   static final Map<int, String> _responseMap = {};
   static final int _maxResponseMapLength = 15;
@@ -105,15 +107,46 @@ abstract class PrinterClient {
     _sub = _stream!.listen(_onData);
 
     _onDataTrigger = onDataTrigger;
+
+    _keepAlive = Timer.periodic(Duration(seconds: 10), PrinterListeners.keepAliveTimer);
   }
 
   static Future<void> disconnect() async {
     _sub?.cancel();
-    await _client?.disconnect();
+    _sub = null;
 
     _stream = null;
-    _sub = null;
+
+    PrinterClient.stopKeepAlive();
+    
+    await _client?.disconnect();
     _client = null;
+  }
+
+  static Future<void> reconnect() async {
+    if (_client?.status == ConnectionStatus.connected) {
+      _sub?.cancel();
+      _sub = null;
+      _stream = null;
+
+      await _client!.disconnect();
+    }
+
+    if (_client == null) {
+      throw Exception("Printer not init! _client is null.");
+    }
+
+    _stream = await _client!.connect();
+    if (_stream == null) {
+      throw Exception("Printer not connected! _stream is null.");
+    }
+
+    _sub = _stream!.listen(_onData);
+  }
+
+  static void stopKeepAlive() {
+    _keepAlive?.cancel();
+    _keepAlive = null;
   }
 
   static Future<String> sendCommand(String command, {int timeout = 5}) async {

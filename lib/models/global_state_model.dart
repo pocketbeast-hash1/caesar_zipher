@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class GlobalStateModel extends ChangeNotifier {
   String appVersion = "???";
   String currentGTIN = "";
+  bool keepAliveProcessing = false;
 
   String _currentFile = "";
   bool _working = false;
