@@ -47,6 +47,7 @@ Section "Uninstall"
     RMDir /r "$LOCALAPPDATA\caesar_zipher"
     
     Delete "$SMPROGRAMS\Caesar Zipher.lnk"
+    Delete "$DESKTOP\Caesar Zipher.lnk"
     
     DeleteRegKey HKCU "Software\CaesarZipher"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\CaesarZipher"
