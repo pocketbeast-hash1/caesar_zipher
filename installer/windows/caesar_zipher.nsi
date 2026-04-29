@@ -25,6 +25,7 @@ Section "Основная установка"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     
     CreateShortcut "$SMPROGRAMS\Caesar Zipher.lnk" "$INSTDIR\caesar_zipher.exe"
+    CreateShortcut "$DESKTOP\Caesar Zipher.lnk" "$INSTDIR\caesar_zipher.exe"
     
     WriteRegStr HKCU "Software\CaesarZipher" "Install_Dir" "$INSTDIR"
     
