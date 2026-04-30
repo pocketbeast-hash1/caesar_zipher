@@ -1,6 +1,7 @@
 import 'package:caesar_zipher/models/global_state_model.dart';
 import 'package:caesar_zipher/styles/colors.dart';
 import 'package:caesar_zipher/widgets/box.dart';
+import 'package:caesar_zipher/widgets/caesar_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -42,6 +43,17 @@ class _LogsState extends State<Logs> {
     }
   }
 
+  void _clearLogs(BuildContext context, GlobalStateModel state) {
+    if (context.mounted) {
+      showDialog<void>(context: context, builder: (BuildContext context) {
+        return CaesarDialog(
+          title: "Очистить логи?",
+          onSubmit: state.clearLogs,
+        );
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<GlobalStateModel>(
@@ -53,25 +65,39 @@ class _LogsState extends State<Logs> {
         }
 
         return BoxContainer(
-          child: Column(
+          child: Stack(
             children: [
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemCount: state.logs.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      title: Container(
-                        padding: EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: _getLogColor(state.logs[index]),
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
-                        ),
-                        child: Text("> ${state.logs[index]}"),
-                      ),
-                    );
-                  },
+              Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      shrinkWrap: true,
+                      itemCount: state.logs.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ListTile(
+                          title: Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: _getLogColor(state.logs[index]),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(5),
+                              ),
+                            ),
+                            child: Text("> ${state.logs[index]}"),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  onPressed: () => _clearLogs(context, state),
+                  icon: Icon(Icons.clear_all_outlined),
                 ),
               ),
             ],

@@ -57,6 +57,11 @@ class GlobalStateModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearLogs() {
+    _logs.clear();
+    notifyListeners();
+  }
+
   bool get debugMode => _debugMode;
   set debugMode(bool val) {
     _debugMode = val;
