@@ -110,7 +110,7 @@ abstract class PrinterFacade {
 
       if (codeStructure.gtin != globalState.currentGTIN) {
         AppLogger.logger.e(
-          "Ошибка при обновлении кода на принтере: GTIN штрихкода (${codeStructure.gtin}) не соответствует GTIN группы (${globalState.currentGTIN})",
+          "Ошибка при обновлении кода на принтере: GTIN из файла (${codeStructure.gtin}) не соответствует GTIN из макета (${globalState.currentGTIN})",
         );
         await setWorking(false);
         return;
