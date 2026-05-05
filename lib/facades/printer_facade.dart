@@ -36,7 +36,7 @@ abstract class PrinterFacade {
       }
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при попытке подключиться к принтеру: $e, $s");
-      
+
       globalState.currentGTIN = "";
       globalState.setPrinterConnected(false);
       globalState.setWorking(false);
@@ -73,7 +73,9 @@ abstract class PrinterFacade {
       await PrinterClient.reconnect();
       globalState.setPrinterConnected(true);
     } catch (err, s) {
-      AppLogger.logger.e("Ошибка при попытке переподключиться к принтеру: $err, $s");
+      AppLogger.logger.e(
+        "Ошибка при попытке переподключиться к принтеру: $err, $s",
+      );
       rethrow;
     }
   }
@@ -103,30 +105,30 @@ abstract class PrinterFacade {
   }
 
   static Future<void> updateCode(String newCode) async {
-    CodeStructure codeStructure = CodesValidator.getCodeStructure(newCode);
-
-    if (codeStructure.gtin != globalState.currentGTIN) {
-      AppLogger.logger.e(
-        "Ошибка при обновлении кода на принтере: GTIN штрихкода (${codeStructure.gtin}) не соответствует GTIN группы (${globalState.currentGTIN})",
-      );
-      await setWorking(false);
-      return;
-    }
-
-    Map<String, String> newFields = {
-      PrinterClient.serialNumberField: codeStructure.serialNumber,
-    };
-
-    for (int i = 0; i < PrinterClient.cryptoPartsFields.length; i++) {
-      String fieldName = PrinterClient.cryptoPartsFields[i];
-      String fieldValue = i <= codeStructure.cryptoParts.length - 1
-          ? codeStructure.cryptoParts[i]
-          : "";
-
-      newFields[fieldName] = fieldValue;
-    }
-
     try {
+      CodeStructure codeStructure = CodesValidator.getCodeStructure(newCode);
+
+      if (codeStructure.gtin != globalState.currentGTIN) {
+        AppLogger.logger.e(
+          "Ошибка при обновлении кода на принтере: GTIN штрихкода (${codeStructure.gtin}) не соответствует GTIN группы (${globalState.currentGTIN})",
+        );
+        await setWorking(false);
+        return;
+      }
+
+      Map<String, String> newFields = {
+        PrinterClient.serialNumberField: codeStructure.serialNumber,
+      };
+
+      for (int i = 0; i < PrinterClient.cryptoPartsFields.length; i++) {
+        String fieldName = PrinterClient.cryptoPartsFields[i];
+        String fieldValue = i <= codeStructure.cryptoParts.length - 1
+            ? codeStructure.cryptoParts[i]
+            : "";
+
+        newFields[fieldName] = fieldValue;
+      }
+
       await PrinterClient.updateJob(newFields);
     } catch (e, s) {
       AppLogger.logger.e("Ошибка при обновлении кода на принтере: $e, $s");
