@@ -19,7 +19,7 @@ abstract class PrinterFacade {
       await setWorking(false);
 
       List<PrinterNotifications> notificationsToEnable = [
-        PrinterNotifications.printComplete,
+        PrinterNotifications.printStart,
         PrinterNotifications.currentJobChanged,
         PrinterNotifications.stateChange,
       ];
