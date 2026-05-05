@@ -7,8 +7,8 @@ import 'package:caesar_zipher/printer_client.dart';
 
 abstract class PrinterListeners {
   static PrinterNotifications? getNotificationType(String data) {
-    if (data == PrinterNotifications.printComplete.value) {
-      return PrinterNotifications.printComplete;
+    if (data == PrinterNotifications.printStart.value) {
+      return PrinterNotifications.printStart;
     } else if (data.contains(RegExp(r"^JOB\|"))) {
       return PrinterNotifications.currentJobChanged;
     } else if (data.contains(RegExp(r"^STS\|\d\|$"))) {
@@ -20,8 +20,8 @@ abstract class PrinterListeners {
 
   static void onData(String data) {
     PrinterNotifications? type = getNotificationType(data);
-    if (type == PrinterNotifications.printComplete && globalState.working) {
-      _handlePRC();
+    if (type == PrinterNotifications.printStart && globalState.working) {
+      _handlePRS();
     } else if (type == PrinterNotifications.currentJobChanged) {
       _handleJOB();
     } else if (type == PrinterNotifications.stateChange) {
@@ -32,7 +32,7 @@ abstract class PrinterListeners {
     }
   }
 
-  static Future<void> _handlePRC() async {
+  static Future<void> _handlePRS() async {
     List<String> codes = globalState.codes;
 
     codes.removeAt(codes.length - 1);
