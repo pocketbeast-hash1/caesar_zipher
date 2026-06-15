@@ -32,35 +32,57 @@ abstract class PrinterClient {
   static Function? _onDataTrigger;
   static Timer? _keepAlive;
 
-  static int _responseNumber = 0;
-  static final Map<int, String> _responseMap = {};
-  static final int _maxResponseMapLength = 15;
+  static final List<_PendingResponse> _pendingResponses = [];
+  static final List<String> _responseHistory = [];
+  static const int _maxResponseHistoryLength = 15;
 
   static String get gtinField => _gtinField;
   static String get serialNumberField => _serialNumberField;
   static List<String> get cryptoPartsFields => _cryptoPartsFields;
 
   static void _onData(Message msg) {
-    String msgData = msg.text;
-    msgData = msgData.replaceAll("\r", "");
-    msgData = msgData.replaceAll("\n", "");
-
-    PrinterNotifications? notificationType =
-        PrinterListeners.getNotificationType(msgData);
-
-    // не нужны ответы от оповещений
-    if (notificationType == null) {
-      _responseNumber++;
-      
-      if (_responseMap.length == _maxResponseMapLength) {
-        List<int> keys = _responseMap.keys.toList();
-        keys.sort();
-        _responseMap.remove(keys.first);
+    for (String line in splitResponseLines(msg.text)) {
+      if (!PrinterClient.isNotificationLine(line)) {
+        _completePendingResponse(line);
       }
-      _responseMap[_responseNumber] = msgData;
+
+      _onDataTrigger?.call(line);
+    }
+  }
+
+  static List<String> splitResponseLines(String payload) {
+    return payload
+        // .split(RegExp(r"\r?\n"))
+        .split(RegExp(r"\r"))
+        .map((line) => normalizeLine(line))
+        .where((line) => line.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  static String normalizeLine(String value) {
+    return value.replaceAll("\r", "").replaceAll("\n", "").trim();
+  }
+
+  static bool isNotificationLine(String line) {
+    return PrinterListeners.getNotificationType(line) != null;
+  }
+
+  static void _completePendingResponse(String value) {
+    // `_responseHistory` — это небольшой журнал последних “неожиданных” строк ответа принтера.
+    // Он нужен для диагностики: если ответ пришёл, но не связан ни с одним ожидаемым запросом, 
+    // его можно увидеть в истории и понять, что именно прислало устройство.
+    if (_pendingResponses.isEmpty) {
+      _responseHistory.add(value);
+      if (_responseHistory.length > _maxResponseHistoryLength) {
+        _responseHistory.removeAt(0);
+      }
+      return;
     }
 
-    _onDataTrigger?.call(msgData);
+    final pending = _pendingResponses.removeAt(0);
+    if (!pending.completer.isCompleted) {
+      pending.completer.complete(value);
+    }
   }
 
   /// Returm map from string like: `"field1=value1|field2=value2|field3=value3|"`
@@ -116,9 +138,10 @@ abstract class PrinterClient {
     _sub = null;
 
     _stream = null;
+    _pendingResponses.clear();
 
     PrinterClient.stopKeepAlive();
-    
+
     await _client?.disconnect();
     _client = null;
   }
@@ -128,6 +151,7 @@ abstract class PrinterClient {
       _sub?.cancel();
       _sub = null;
       _stream = null;
+      _pendingResponses.clear();
 
       await _client!.disconnect();
     }
@@ -150,22 +174,43 @@ abstract class PrinterClient {
   }
 
   static Future<String> sendCommand(String command, {int timeout = 5}) async {
-    int currentResponseNumber = _responseNumber + 1;
-    _client?.send("$command\r\n");
-
-    DateTime endTimeout = DateTime.now().add(Duration(seconds: timeout));
-    while (DateTime.now().isBefore(endTimeout) &&
-        _responseNumber < currentResponseNumber) {
-      await Future.delayed(Duration(milliseconds: 100));
+    if (_client == null || _stream == null) {
+      throw Exception("Printer not connected. Call connect() first.");
     }
 
-    bool gotResponse = _responseMap.containsKey(currentResponseNumber);
-    String response = gotResponse ? _responseMap[currentResponseNumber]! : "";
-    AppLogger.logger.d(
-      "Отправлена команда: $command\nОтвет получен: $gotResponse\nНомер ответа: $currentResponseNumber\nОтвет: $response",
-    );
+    final completer = Completer<String>();
+    final pending = _PendingResponse(completer);
+    _pendingResponses.add(pending);
 
-    return response;
+    try {
+      final bytesWritten = _client!.send("$command\r\n");
+      if (bytesWritten <= 0) {
+        _pendingResponses.remove(pending);
+        throw Exception("Не удалось отправить команду '$command': клиент вернул 0 байт.");
+      }
+
+      final response = await completer.future.timeout(
+        Duration(seconds: timeout),
+        onTimeout: () {
+          _pendingResponses.remove(pending);
+          throw TimeoutException(
+            "Превышено время ожидания ответа на команду '$command'.",
+            Duration(seconds: timeout),
+          );
+        },
+      );
+
+      AppLogger.logger.d(
+        "Отправлена команда: $command\nОтвет получен: ${response.isNotEmpty}\nОтвет: $response",
+      );
+
+      return response;
+    } catch (error) {
+      if (!completer.isCompleted) {
+        _pendingResponses.remove(pending);
+      }
+      rethrow;
+    }
   }
 
   static Future<void> changeState(PrinterStates state) async {
@@ -223,6 +268,12 @@ abstract class PrinterClient {
 
     return fields;
   }
+}
+
+class _PendingResponse {
+  _PendingResponse(this.completer);
+
+  final Completer<String> completer;
 }
 
 enum PrinterResponse {
